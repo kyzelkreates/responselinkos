@@ -1,20 +1,26 @@
 /**
  * ============================================================
  * ResponseLink OS™ — Application Router
- * Run 9 — No Auth — Direct to Dashboard
+ * Run 10 — Intro Page Added
  *
  * ResponseLink OS™
  * AI-Assisted Community Welfare & Mobile Response Platform
- * Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+ * Powered by 4P3X Intelligent AI™ — Created by Kyzel Kreates™
  *
- * Auth removed for demo deployment — all routes open.
- * Root redirects straight to /dashboard.
+ * CHANGES (Run 10 — non-breaking):
+ * - Added IntroPage at root index (/)
+ * - /dashboard still routes to the unchanged CommandDashboard
+ * - All existing routes preserved exactly
+ * - No dashboard, PWA, or sync logic altered
  * ============================================================
  */
 
-import { createHashRouter, Navigate } from 'react-router-dom'
+import { createHashRouter } from 'react-router-dom'
 
 import AppShell       from './layouts_AppShell'
+
+// ── Intro Page (new — Run 10) ─────────────────────────────────
+import IntroPage      from './pages_Intro'
 
 // ── Command Dashboard ─────────────────────────────────────────
 import CommandDashboard  from './pages_CommandDashboard'
@@ -56,14 +62,14 @@ export const router = createHashRouter([
   { path: '/responder-app-direct', element: <DriverApp /> },
   { path: '/ap3x',                 element: <AP3X /> },
 
-  // ── Main App Shell (no auth guard) ───────────────────────
+  // ── Main App Shell ────────────────────────────────────────
   {
     path: '/',
     element: <AppShell />,
     children: [
 
-      // Root → dashboard
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      // Root → Intro page (Run 10 — was: Navigate to /dashboard)
+      { index: true, element: <IntroPage /> },
 
       // ── Command Dashboard ────────────────────────────────
       { path: 'dashboard',             element: <CommandDashboard /> },
