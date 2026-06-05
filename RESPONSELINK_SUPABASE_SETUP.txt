@@ -1,0 +1,533 @@
+==============================================================
+ResponseLink OS™ — Supabase Backend Planning File
+AI-Assisted Community Welfare & Mobile Response Platform
+Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+
+Run 9 — Backend-Ready Live Mode, API Config, Final MVP
+
+STATUS: PLANNING FILE ONLY
+This file is a backend schema planning reference for future
+live deployment. It is NOT required for local demo mode.
+Local demo runs fully without any backend.
+
+Full backend implementation is Run 10.
+
+IMPORTANT NOTES:
+• RLS (Row Level Security) MUST be ENABLED for all real tables
+• Real deployment requires organisation-specific access controls
+• Authentication setup required before entering real welfare data
+• Data protection review required before live operational use
+• This plan does not guarantee production compliance
+• Consult your Data Protection Officer before live deployment
+• ResponseLink OS™ is advisory software — not a safeguarding system
+==============================================================
+
+
+==============================================================
+SUPABASE PROJECT SETUP
+==============================================================
+
+1. Create a Supabase project at https://supabase.com
+2. Note your project URL and anon key (public key only)
+3. Add to .env.local:
+     VITE_SUPABASE_URL=https://your-project.supabase.co
+     VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key...
+4. NEVER add SUPABASE_SERVICE_ROLE_KEY to frontend code
+5. Enable Email Auth (or SSO/Magic Link) in Supabase Auth settings
+6. Run the SQL schema below in Supabase SQL editor
+7. Enable RLS on all tables (see SQL below)
+8. Test connection via Demo/Live Settings → Backend Setup
+
+
+==============================================================
+EXTENSIONS
+==============================================================
+
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
+==============================================================
+TABLES
+==============================================================
+
+-- Organisations
+CREATE TABLE IF NOT EXISTS organisations (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name              TEXT NOT NULL,
+  slug              TEXT,
+  contact_email     TEXT,
+  contact_phone     TEXT,
+  address           TEXT,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Responders
+CREATE TABLE IF NOT EXISTS responders (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  display_name      TEXT NOT NULL,
+  role              TEXT,
+  contact_email     TEXT,
+  contact_phone     TEXT,
+  status            TEXT DEFAULT 'available',
+  safety_status     TEXT,
+  current_mission_id UUID,
+  last_check_in_at  TIMESTAMPTZ,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Service Users
+-- NOTE: This table contains sensitive welfare data.
+-- Data minimisation and consent must be applied before use.
+-- Do not store unnecessary personal data.
+CREATE TABLE IF NOT EXISTS service_users (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  display_name      TEXT NOT NULL,
+  preferred_name    TEXT,
+  support_type      TEXT,
+  wellbeing_status  TEXT DEFAULT 'stable',
+  help_request_status TEXT,
+  last_check_in_at  TIMESTAMPTZ,
+  risk_level        TEXT DEFAULT 'low',
+  consent_given     BOOLEAN DEFAULT FALSE,
+  consent_date      TIMESTAMPTZ,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Missions
+CREATE TABLE IF NOT EXISTS missions (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  title             TEXT NOT NULL,
+  mission_type      TEXT,
+  priority          TEXT,
+  risk_level        TEXT DEFAULT 'low',
+  status            TEXT DEFAULT 'draft',
+  assigned_responder_id UUID REFERENCES responders(id),
+  linked_service_user_id UUID REFERENCES service_users(id),
+  area              TEXT,
+  scheduled_time    TIMESTAMPTZ,
+  due_time          TIMESTAMPTZ,
+  check_in_required BOOLEAN DEFAULT FALSE,
+  safety_notes      TEXT,
+  case_notes        TEXT,
+  outcome_notes     TEXT,
+  escalation_state  TEXT,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Welfare Visits
+CREATE TABLE IF NOT EXISTS welfare_visits (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  status            TEXT DEFAULT 'pending',
+  started_at        TIMESTAMPTZ,
+  arrived_at        TIMESTAMPTZ,
+  completed_at      TIMESTAMPTZ,
+  outcome_notes     TEXT,
+  follow_up_required BOOLEAN DEFAULT FALSE,
+  checklist_items   JSONB,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Check-ins
+CREATE TABLE IF NOT EXISTS check_ins (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  check_in_type     TEXT,
+  wellbeing_status  TEXT,
+  safety_status     TEXT,
+  message           TEXT,
+  risk_level        TEXT,
+  timestamp         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Risk Flags
+CREATE TABLE IF NOT EXISTS risk_flags (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  title             TEXT NOT NULL,
+  description       TEXT,
+  risk_level        TEXT NOT NULL DEFAULT 'medium',
+  trigger_type      TEXT,
+  status            TEXT DEFAULT 'open',
+  requires_supervisor_review BOOLEAN DEFAULT TRUE,
+  human_reviewed    BOOLEAN DEFAULT FALSE,
+  reviewed_at       TIMESTAMPTZ,
+  review_status     TEXT DEFAULT 'required',
+  supervisor_note   TEXT,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Incidents
+CREATE TABLE IF NOT EXISTS incidents (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  title             TEXT NOT NULL,
+  category          TEXT,
+  severity          TEXT DEFAULT 'medium',
+  description       TEXT,
+  action_taken      TEXT,
+  supervisor_review_status TEXT DEFAULT 'pending',
+  supervisor_note   TEXT,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Messages
+CREATE TABLE IF NOT EXISTS messages (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  from_type         TEXT,
+  from_id           UUID,
+  to_type           TEXT,
+  to_id             UUID,
+  service_user_id   UUID REFERENCES service_users(id),
+  content           TEXT,
+  message_type      TEXT,
+  read_at           TIMESTAMPTZ,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Evidence Records
+CREATE TABLE IF NOT EXISTS evidence_records (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  mission_id        UUID REFERENCES missions(id),
+  visit_id          UUID REFERENCES welfare_visits(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  record_type       TEXT,
+  recorded_by_type  TEXT,
+  recorded_by_id    UUID,
+  title             TEXT,
+  content           TEXT,
+  timestamp         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  data_freshness    TEXT,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'pending',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Sync Events
+CREATE TABLE IF NOT EXISTS sync_events (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  entity_type       TEXT NOT NULL,
+  entity_id         UUID,
+  action            TEXT,
+  source            TEXT,
+  sync_status       TEXT DEFAULT 'pending',
+  payload           JSONB,
+  error_message     TEXT,
+  retry_count       INT DEFAULT 0,
+  synced_at         TIMESTAMPTZ,
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id)
+);
+
+-- Supervisor Reviews (human decision log — append-only)
+CREATE TABLE IF NOT EXISTS supervisor_reviews (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  entity_type       TEXT NOT NULL,
+  entity_id         UUID NOT NULL,
+  mission_id        UUID REFERENCES missions(id),
+  responder_id      UUID REFERENCES responders(id),
+  service_user_id   UUID REFERENCES service_users(id),
+  action            TEXT NOT NULL,
+  reviewer_note     TEXT,
+  reviewer_id       UUID REFERENCES auth.users(id),
+  demo_record       BOOLEAN NOT NULL DEFAULT FALSE,
+  sync_status       TEXT DEFAULT 'synced',
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  -- NOTE: No updated_at — this table is APPEND-ONLY
+  -- Records must not be altered after creation
+);
+
+-- App Settings
+CREATE TABLE IF NOT EXISTS app_settings (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organisation_id   UUID REFERENCES organisations(id),
+  key               TEXT NOT NULL,
+  value             JSONB,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_by        UUID REFERENCES auth.users(id),
+  UNIQUE (organisation_id, key)
+);
+
+
+==============================================================
+INDEXES
+==============================================================
+
+CREATE INDEX IF NOT EXISTS idx_missions_org         ON missions(organisation_id);
+CREATE INDEX IF NOT EXISTS idx_missions_responder    ON missions(assigned_responder_id);
+CREATE INDEX IF NOT EXISTS idx_missions_service_user ON missions(linked_service_user_id);
+CREATE INDEX IF NOT EXISTS idx_missions_status       ON missions(status);
+CREATE INDEX IF NOT EXISTS idx_risk_flags_mission    ON risk_flags(mission_id);
+CREATE INDEX IF NOT EXISTS idx_risk_flags_status     ON risk_flags(status);
+CREATE INDEX IF NOT EXISTS idx_incidents_mission     ON incidents(mission_id);
+CREATE INDEX IF NOT EXISTS idx_incidents_severity    ON incidents(severity);
+CREATE INDEX IF NOT EXISTS idx_check_ins_mission     ON check_ins(mission_id);
+CREATE INDEX IF NOT EXISTS idx_check_ins_responder   ON check_ins(responder_id);
+CREATE INDEX IF NOT EXISTS idx_check_ins_su          ON check_ins(service_user_id);
+CREATE INDEX IF NOT EXISTS idx_sync_events_status    ON sync_events(sync_status);
+CREATE INDEX IF NOT EXISTS idx_evidence_mission      ON evidence_records(mission_id);
+CREATE INDEX IF NOT EXISTS idx_sup_reviews_entity    ON supervisor_reviews(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_demo_record_missions  ON missions(demo_record);
+
+
+==============================================================
+TRIGGERS — updated_at auto-update
+==============================================================
+
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger to all tables with updated_at
+DO $$
+DECLARE
+  t TEXT;
+BEGIN
+  FOREACH t IN ARRAY ARRAY[
+    'organisations','responders','service_users','missions',
+    'welfare_visits','check_ins','risk_flags','incidents',
+    'messages','evidence_records','sync_events','app_settings'
+  ] LOOP
+    EXECUTE FORMAT('
+      DROP TRIGGER IF EXISTS trg_updated_at ON %I;
+      CREATE TRIGGER trg_updated_at
+        BEFORE UPDATE ON %I
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+    ', t, t);
+  END LOOP;
+END;
+$$;
+
+
+==============================================================
+ENABLE ROW LEVEL SECURITY (RLS)
+==============================================================
+
+-- RLS MUST be enabled for all real welfare data tables
+-- before entering any real operational data.
+-- These ALTER TABLE commands enable RLS on each table.
+
+ALTER TABLE organisations         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE responders            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE service_users         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE missions              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE welfare_visits        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE check_ins             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE risk_flags            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE incidents             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE evidence_records      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sync_events           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE supervisor_reviews    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_settings          ENABLE ROW LEVEL SECURITY;
+
+
+==============================================================
+RLS POLICIES (PLACEHOLDER — ADAPT TO YOUR ORGANISATION)
+==============================================================
+
+-- These are example policies only. Final access control
+-- design must be reviewed by your organisation and DPO
+-- before live deployment.
+
+-- Authenticated users can read their organisation's records
+CREATE POLICY "org_read_missions" ON missions
+  FOR SELECT USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "org_insert_missions" ON missions
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+CREATE POLICY "org_update_missions" ON missions
+  FOR UPDATE USING (auth.uid() IS NOT NULL);
+
+-- Supervisor reviews are append-only (no update/delete)
+CREATE POLICY "read_supervisor_reviews" ON supervisor_reviews
+  FOR SELECT USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "insert_supervisor_reviews" ON supervisor_reviews
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
+-- Add equivalent policies for all other tables.
+-- Restrict access by organisation_id and user role.
+-- Engage your DPO and legal team before deploying with real data.
+
+-- NOTE: DO NOT add policies that expose service_users data
+-- to unauthenticated (anon) users. Service user data is
+-- sensitive and must only be accessible to authenticated
+-- organisation staff with appropriate roles.
+
+
+==============================================================
+VERIFICATION QUERIES (run after setup to check)
+==============================================================
+
+-- Check all tables exist
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public'
+ORDER BY table_name;
+
+-- Check RLS is enabled on all tables
+SELECT tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY tablename;
+
+-- Check indexes
+SELECT indexname, tablename
+FROM pg_indexes
+WHERE schemaname = 'public'
+ORDER BY tablename;
+
+-- Confirm no data in real tables after fresh setup
+SELECT
+  (SELECT COUNT(*) FROM missions        WHERE NOT demo_record) AS live_missions,
+  (SELECT COUNT(*) FROM responders      WHERE NOT demo_record) AS live_responders,
+  (SELECT COUNT(*) FROM service_users   WHERE NOT demo_record) AS live_service_users,
+  (SELECT COUNT(*) FROM incidents       WHERE NOT demo_record) AS live_incidents;
+
+
+==============================================================
+ROLLBACK NOTES
+==============================================================
+
+-- To rollback / drop all ResponseLink OS tables:
+-- Run in reverse order to avoid foreign key constraint errors
+
+-- DROP TABLE IF EXISTS supervisor_reviews  CASCADE;
+-- DROP TABLE IF EXISTS app_settings        CASCADE;
+-- DROP TABLE IF EXISTS sync_events         CASCADE;
+-- DROP TABLE IF EXISTS evidence_records    CASCADE;
+-- DROP TABLE IF EXISTS messages            CASCADE;
+-- DROP TABLE IF EXISTS incidents           CASCADE;
+-- DROP TABLE IF EXISTS risk_flags          CASCADE;
+-- DROP TABLE IF EXISTS check_ins           CASCADE;
+-- DROP TABLE IF EXISTS welfare_visits      CASCADE;
+-- DROP TABLE IF EXISTS missions            CASCADE;
+-- DROP TABLE IF EXISTS service_users       CASCADE;
+-- DROP TABLE IF EXISTS responders          CASCADE;
+-- DROP TABLE IF EXISTS organisations       CASCADE;
+-- DROP FUNCTION IF EXISTS update_updated_at CASCADE;
+
+
+==============================================================
+DEPLOYMENT CHECKLIST (before live use)
+==============================================================
+
+[ ] Create Supabase project
+[ ] Run schema SQL above
+[ ] Enable RLS on all tables (done above)
+[ ] Design and implement organisation-specific RLS policies
+[ ] Set up Supabase Auth (Email, Magic Link, or SSO)
+[ ] Configure Row-Level Security policies for your user roles
+[ ] Review data retention and deletion procedures
+[ ] Consult your Data Protection Officer (DPO)
+[ ] Obtain consent from service users before entering their data
+[ ] Complete Information Governance / GDPR review
+[ ] Test with non-real data before entering real welfare records
+[ ] Enable Supabase Realtime for sync if required
+[ ] Set up backup / point-in-time recovery
+[ ] Review Supabase project access and team permissions
+[ ] Remove any service role key from frontend code (check codebase)
+[ ] Update .env.local with real Supabase URL and anon key only
+[ ] Enable HTTPS-only access in Supabase settings
+[ ] Enable audit logging if required by your organisation
+
+
+==============================================================
+ADVISORY NOTICE
+==============================================================
+
+ResponseLink OS™ is advisory and coordination-support software.
+It does not replace emergency services, safeguarding professionals,
+clinical judgement, legal duties, or organisational procedures.
+
+If someone is in immediate danger, contact emergency services.
+
+All risk prompts, AI summaries, and escalation alerts require
+human supervisor review. The system does not make safeguarding,
+clinical, legal, or welfare decisions autonomously.
+
+4P3X Intelligent AI™ provides advisory prompts from recorded data
+only. It does not verify facts independently.
+
+Final production deployment requires:
+• Data protection review
+• Organisation-specific access control design
+• Authentication and session management
+• Consent procedures for service users
+• Safeguarding policy alignment
+• Legal and compliance review
+
+This planning file is not a substitute for any of the above.
+
+==============================================================
+ResponseLink OS™ · Run 9 · Backend Planning File
+Powered by 4P3X Intelligent AI™ · Created by Kyzel Kreates™
+==============================================================
