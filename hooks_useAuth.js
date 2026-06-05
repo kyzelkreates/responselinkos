@@ -1,37 +1,26 @@
 /**
  * ============================================================
- * APEX AI — useAuth Hook
- * /src/hooks/useAuth.js
+ * ResponseLink OS™ — useAuth Hook
+ * Run 9 — No Auth — Safe stubs for demo deployment
  *
- * Convenient hook for reading auth state from SSOT.
- * Components use this instead of importing the store directly.
+ * Auth is removed for demo. This hook returns safe defaults
+ * so existing components that call useAuth() don't crash.
  * ============================================================
  */
 
-import { useAuthStore } from './core_storage'
-import { authService, hasPermission, USER_ROLES, ROLE_LABELS } from './services_supabase_authService'
-
 export function useAuth() {
-  const { user, role, session, isAuthenticated, isLoading } = useAuthStore(s => ({
-    user:            s.user,
-    role:            s.role,
-    session:         s.session,
-    isAuthenticated: s.isAuthenticated,
-    isLoading:       s.isLoading
-  }))
-
   return {
-    user,
-    role,
-    session,
-    isAuthenticated,
-    isLoading,
-    roleLabel:  ROLE_LABELS[role] || role,
-    can:        (requiredRole) => hasPermission(role, requiredRole),
-    isDriver:   role === USER_ROLES.DRIVER,
-    isAdmin:    hasPermission(role, USER_ROLES.FLEET_ADMIN),
-    isSuperAdmin: role === USER_ROLES.SUPER_ADMIN,
-    signOut:    authService.signOut.bind(authService)
+    user:            null,
+    role:            'admin',          // treat everyone as admin for demo
+    session:         null,
+    isAuthenticated: true,             // always authenticated in demo mode
+    isLoading:       false,
+    roleLabel:       'Administrator',
+    can:             () => true,       // all permissions granted
+    isDriver:        false,
+    isAdmin:         true,
+    isSuperAdmin:    true,
+    signOut:         async () => {},   // no-op
   }
 }
 

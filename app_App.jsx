@@ -1,34 +1,19 @@
 /**
  * ============================================================
- * ResponseLink OS™ — Root App Component (Run 16 — System status wired)
- * /src/app/App.jsx
+ * ResponseLink OS™ — Root App Component
+ * Run 9 — No Auth — Direct to Dashboard
+ *
+ * ResponseLink OS™
+ * AI-Assisted Community Welfare & Mobile Response Platform
+ * Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+ *
+ * AuthProvider removed — no login required for demo deployment.
  * ============================================================
  */
 
 import { RouterProvider } from 'react-router-dom'
-import { router }         from './app_Router'
-import AuthProvider       from './providers_AuthProvider'
-import { useSystemStatus } from './hooks_useSystemStatus'
-import { useEffect }      from 'react'
-import { mountDashboardBridge } from './services_apex_apexBridge'
-
-// Inner wrapper — hooks must be inside a component tree
-function AppCore() {
-  useSystemStatus()
-
-  // ── Apex Command Center Bridge (additive — never breaks existing logic) ──
-  useEffect(() => {
-    const cleanup = mountDashboardBridge()
-    return cleanup
-  }, [])
-
-  return <RouterProvider router={router} />
-}
+import { router } from './app_Router'
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <AppCore />
-    </AuthProvider>
-  )
+  return <RouterProvider router={router} />
 }
