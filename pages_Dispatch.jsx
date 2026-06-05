@@ -669,7 +669,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800/50 flex-shrink-0">
           <div>
             <h2 className="font-semibold text-white">New Dispatch Job</h2>
-            <p className="text-2xs text-slate-600 mt-0.5">Route planner · Mission-aware · Syncs to Responder App</p>
+            <p className="text-2xs text-slate-600 mt-0.5">Mission planner · Welfare-aware · Syncs to Responder App</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors">
             <Icon name="X" size={15} />

@@ -543,7 +543,7 @@ export function shareSyncCodeEmail(code, driverName, vehicleReg, email = '') {
   const body = encodeURIComponent(
     `Hi ${driverName},\n\nYour Apex AI Fleet Control sync code is ready.\n\n` +
     `Sync Code: ${code}\n\nSteps:\n` +
-    `1. Open the AP3X Driver App on your device\n` +
+    `1. Open the Responder App on your device\n` +
     `2. Tap "Enter Sync Code"\n` +
     `3. Paste: ${code}\n\n` +
     `Or tap this link to auto-fill: ${url}\n\n` +

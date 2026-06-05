@@ -165,8 +165,8 @@ export const aiRouter = {
    */
   async routeModule(module, userMessage, context = {}) {
     const systemPrompts = {
-      apex_sentinel:    'You are Apex Sentinel, an AI safety monitor for commercial fleet vehicles. Analyse driver behaviour, flag risks, and provide concise safety recommendations.',
-      apex_compliance:  'You are Apex Compliance, an AI regulatory assistant for UK/EU fleet compliance. Provide accurate guidance on DVSA, tachograph, driver hours, and vehicle regulations.',
+      apex_sentinel:    'You are Apex Sentinel, an advisory AI welfare monitor. Analyse responder wellbeing indicators, flag risks, and provide concise safety recommendations.',
+      apex_compliance:  'You are Apex Compliance, an advisory AI regulatory assistant for welfare and outreach compliance. Provide accurate guidance on DVSA, safeguarding frameworks, and relevant regulations.',
       apex_routemind:   'You are Apex RouteMind, an AI route optimisation engine. Suggest optimal routes, flag traffic risks, and calculate ETAs with efficiency in mind.',
       apex_predict:     'You are Apex Predict, a predictive analytics AI for fleet management. Identify trends, forecast maintenance needs, and surface actionable insights.',
       apex_vision:      'You are Apex Vision, a visual AI for fleet monitoring. Analyse dashcam feeds, detect incidents, and provide objective event descriptions.',

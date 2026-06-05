@@ -358,8 +358,8 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
               <div className="w-10 h-10 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
             </div>
             <div className="text-xs text-slate-400 text-center">
-              <div className="font-medium text-slate-300">Running Fleet Intelligence Engine</div>
-              <div className="text-slate-600 mt-1">Scoring drivers · Calculating routes via GraphHopper</div>
+              <div className="font-medium text-slate-300">Running Mission Intelligence Engine</div>
+              <div className="text-slate-600 mt-1">Scoring responders · Calculating routes via GraphHopper</div>
             </div>
           </div>
         )}
@@ -382,7 +382,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
               <Icon name="CheckCircle" size={22} className="text-emerald-400" />
             </div>
             <div className="text-sm font-semibold text-white">Dispatched</div>
-            <div className="text-xs text-slate-500">Task assigned · Driver notified via Supabase Realtime</div>
+            <div className="text-xs text-slate-500">Task assigned · Responder notified via Supabase Realtime</div>
           </div>
         )}
 
@@ -413,7 +413,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
             {result.candidates?.length === 0 && (
               <div className="flex flex-col items-center justify-center py-8 gap-2 text-center">
                 <Icon name="UserX" size={24} className="text-slate-700" />
-                <div className="text-sm text-slate-400 font-medium">No eligible drivers</div>
+                <div className="text-sm text-slate-400 font-medium">No eligible responders</div>
                 <div className="text-xs text-slate-600 max-w-xs">
                   All available drivers are either offline, already on a task, or fail safety checks.
                   Use the override below to manually assign.
@@ -425,7 +425,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
             {result.candidates?.length > 0 && (
               <div className="space-y-2">
                 <div className="text-2xs text-slate-600 uppercase tracking-wider">
-                  Top {result.candidates.length} suggested driver{result.candidates.length > 1 ? 's' : ''} — click to select
+                  Top {result.candidates.length} suggested responder{result.candidates.length > 1 ? 's' : ''} — click to select
                 </div>
                 {result.candidates.map((c, i) => (
                   <CandidateCard
@@ -438,7 +438,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
                 ))}
                 {result.skipped_drivers > 0 && (
                   <div className="text-2xs text-slate-700 text-center">
-                    +{result.skipped_drivers} more eligible driver{result.skipped_drivers > 1 ? 's' : ''} not shown
+                    +{result.skipped_drivers} more eligible responder{result.skipped_drivers > 1 ? 's' : ''} not shown
                   </div>
                 )}
               </div>
@@ -446,13 +446,13 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
 
             {/* Vehicle picker */}
             <div className="space-y-1.5">
-              <label className="text-2xs text-slate-500 uppercase tracking-wider">Vehicle assignment (optional)</label>
+              <label className="text-2xs text-slate-500 uppercase tracking-wider">Support unit assignment (optional)</label>
               <select
                 value={vehicleId}
                 onChange={e => setVehicleId(e.target.value)}
                 className="apex-input w-full text-sm"
               >
-                <option value="">No vehicle selected</option>
+                <option value="">No support unit selected</option>
                 {vehicles.map(v => (
                   <option key={v.id} value={v.id}>
                     {v.reg_number} — {v.make}{v.model ? ` ${v.model}` : ''}{v.status === 'maintenance' ? ' ⚠️' : ''}
@@ -469,7 +469,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
               >
                 <div className="flex items-center gap-2">
                   <Icon name="UserCog" size={12} />
-                  <span>Dispatcher override — manually select any driver</span>
+                  <span>Coordinator override — manually select any responder</span>
                 </div>
                 <Icon name={overrideMode ? 'ChevronUp' : 'ChevronDown'} size={12} />
               </button>
@@ -481,13 +481,13 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
                     Override will be logged in dashboard events
                   </div>
                   <div className="space-y-1">
-                    <label className="text-2xs text-slate-500">Select driver</label>
+                    <label className="text-2xs text-slate-500">Select responder</label>
                     <select
                       value={overrideId}
                       onChange={e => setOverrideId(e.target.value)}
                       className="apex-input w-full text-sm"
                     >
-                      <option value="">Choose any driver…</option>
+                      <option value="">Choose any responder…</option>
                       {drivers.map(d => (
                         <option key={d.id} value={d.id}>
                           {d.full_name || d.name} ({d.status || 'unknown'})

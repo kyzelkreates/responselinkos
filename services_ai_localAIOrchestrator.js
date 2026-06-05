@@ -213,10 +213,10 @@ class LocalAIOrchestrator {
   _buildSystemPrompt(module) {
     const prompts = {
       sentinel_chat:      'You are Apex Sentinel, an AI safety assistant for commercial drivers. Be concise and safety-focused.',
-      routemind:          'You are Apex RouteMind, a routing AI for fleet vehicles. Give brief, actionable route advice.',
-      compliance:         'You are a fleet compliance advisor. Focus on UK/EU transport regulations. Be precise.',
+      routemind:          'You are Apex RouteMind, an advisory AI for responder routing and visit planning. Give brief, actionable guidance.',
+      compliance:         'You are a welfare compliance advisor. Focus on UK/EU welfare, outreach, and safeguarding frameworks. Be precise.',
       anomaly_detect:     'You are a fleet telemetry analyst. Identify anomalies in driving data. Be brief.',
-      fatigue_assessment: 'You are a driver fatigue monitor. Apply EU 4.5h rule. Prioritise driver safety.',
+      fatigue_assessment: 'You are a responder welfare monitor. Flag overdue check-ins and extended shift durations. Prioritise responder safety.',
       dispatch_optimise:  'You are a dispatch optimiser. Suggest efficient job batching and routing.',
     }
     return prompts[module] || 'You are an Apex AI Fleet assistant. Be concise and helpful.'

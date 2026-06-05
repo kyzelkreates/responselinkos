@@ -8,7 +8,7 @@
  *  - CreateJobFromRouteModal: creates a real task in Dispatch
  *    via dispatchService.createJob — appears in Dispatch board
  *    immediately via Supabase Realtime
- *  - Stops input in Route Planner (add/remove waypoints)
+ *  - Stops input in Mission Planner (add/remove waypoints)
  *  - AI routing label shown (GH / OSRM / GMaps)
  * ============================================================
  */
@@ -321,7 +321,7 @@ function CreateJobModal({ routeData, drivers, vehicles, onClose, onCreated }) {
   )
 }
 
-// ─── Route Planner ────────────────────────────────────────────
+// ─── Mission Planner ────────────────────────────────────────────
 function RoutePlanner({ onRoute, onClear, drivers, vehicles }) {
   const [from,    setFrom]    = useState('')
   const [to,      setTo]      = useState('')
@@ -390,7 +390,7 @@ function RoutePlanner({ onRoute, onClear, drivers, vehicles }) {
         <button onClick={() => setOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-[#0d1426]/97 border border-slate-700/50 rounded-xl text-xs text-slate-400 hover:text-white backdrop-blur-sm shadow-xl transition-colors">
           <Icon name="Route" size={12} className="text-cyan-400" />
-          Route Planner
+          Mission Planner
         </button>
       </div>
     )
@@ -405,7 +405,7 @@ function RoutePlanner({ onRoute, onClear, drivers, vehicles }) {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Icon name="Route" size={12} className="text-cyan-400" />
-              <span className="text-xs font-semibold text-slate-200">Route Planner</span>
+              <span className="text-xs font-semibold text-slate-200">Mission Planner</span>
               <span className="text-2xs text-slate-600 font-mono">GH → OSRM fallback</span>
             </div>
             <button onClick={() => setOpen(false)} className="text-slate-600 hover:text-slate-400 p-0.5">
@@ -676,7 +676,7 @@ export default function Navigation() {
         <FleetSidebar vehicles={vehicles} activeId={selectedVehicle?.id}
           onSelect={handleSelectVehicle} isLoading={isLoading} />
 
-        {/* Route Planner — passes drivers + vehicles for job creation */}
+        {/* Mission Planner — passes drivers + vehicles for job creation */}
         <RoutePlanner
           onRoute={handleRoute}
           onClear={handleClearRoute}

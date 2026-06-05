@@ -60,7 +60,7 @@ export function sendViaEmail(driverId, driverEmail) {
     `Hi ${pkg.driver_name},\n\n` +
     `You have ${jobs} job${jobs !== 1 ? 's' : ''} assigned in Apex Fleet Control.\n\n` +
     `Open on your device:\n${link}\n\n` +
-    `Or paste this sync code into the AP3X Driver app > Import Jobs:\n\n${pkgStr(pkg)}\n\n` +
+    `Or paste this sync code into the Responder App > Import Missions:\n\n${pkgStr(pkg)}\n\n` +
     `— ResponseLink OS™`
   )
   const mailto = `mailto:${driverEmail || ''}?subject=${subj}&body=${body}`
@@ -82,7 +82,7 @@ export async function sendViaShare(driverId) {
   try {
     await navigator.share({
       title: `Apex AI — Jobs for ${pkg.driver_name}`,
-      text:  `${jobs} job${jobs !== 1 ? 's' : ''} assigned. Open link in AP3X Driver app.`,
+      text:  `${jobs} job${jobs !== 1 ? 's' : ''} assigned. Open link in Responder App.`,
       url:   link,
     })
     return { ok: true, link }
@@ -492,7 +492,7 @@ function buildCodePayload(code, driverName, vehicleReg) {
     driverName: driverName || 'Driver',
     vehicleReg: vehicleReg || '',
     expiresIn: '60 minutes',
-    instructions: `Open AP3X Driver app and enter code: ${code}`,
+    instructions: `Open Responder App and enter code: ${code}`,
   }
 }
 
@@ -511,7 +511,7 @@ export async function sendViaWiFiDirect(code, driverName, vehicleReg) {
       title: `AP3X Driver Pairing Code — ${driverName || 'Driver'}`,
       text:  `Your Apex driver pairing code: ${code}
 
-Open AP3X Driver app: ${payload.driverAppURL}
+Open Responder App: ${payload.driverAppURL}
 Enter this code on the setup screen.
 Expires in 60 minutes.`,
     })
@@ -618,7 +618,7 @@ export function sendPairingCodeEmail(code, driverName, vehicleReg, email = '') {
 ` +
     `How to get started:
 ` +
-    `  1. Open the AP3X Driver app on your device:
+    `  1. Open the Responder App on your device:
 ` +
     `     ${payload.driverAppURL}
 
@@ -659,7 +659,7 @@ export function sendPairingCodeWhatsApp(code, driverName, vehicleReg, phone = ''
 ` +
     `Steps:
 ` +
-    `1️⃣ Open the AP3X Driver app:
+    `1️⃣ Open the Responder App:
 ${payload.driverAppURL}
 
 ` +
