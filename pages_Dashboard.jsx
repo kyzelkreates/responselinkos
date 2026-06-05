@@ -218,7 +218,7 @@ function EmptyFleet({ navigate }) {
         </button>
         <button onClick={() => navigate(ROUTES.DRIVERS)}
           className="text-2xs text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-lg hover:bg-violet-500/15 transition-colors flex items-center gap-1">
-          <Icon name="Plus" size={11} /> Add Driver
+          <Icon name="Plus" size={11} /> Add Responder
         </button>
       </div>
     </div>
@@ -502,7 +502,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
   // ── Generate code ──────────────────────────────────────────
   const handleGenerate = () => {
     const driver = drivers?.find(d => d.id === syncDriver) || null
-    const name   = driver?.full_name || syncDriverName || 'Driver'
+    const name   = driver?.full_name || syncDriverName || 'Responder'
     const reg    = driver?.vehicle_reg || driver?.license_plate || syncVehicleReg || '—'
     const code   = generateSyncCode(syncDriver || null, name, reg, 60)
     const qr     = getSyncCodeQR(code, 200)
@@ -551,7 +551,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
 
   const TABS = [
     { key: 'sync',     label: 'Sync Code',   icon: 'LinkIcon'      },
-    { key: 'live',     label: 'Live Drivers', icon: 'Radio',        badge: livePositions.length || null },
+    { key: 'live',     label: 'Live Responders', icon: 'Radio',        badge: livePositions.length || null },
     { key: 'commands', label: 'Commands',     icon: 'Send'          },
     { key: 'ai',       label: 'AI Reports',   icon: 'Cpu',          badge: aiReports.length || null },
   ]
@@ -606,13 +606,13 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
             {/* Generator */}
             <div className="space-y-3">
               <p className="text-xs text-slate-400 leading-relaxed">
-                Generate a secure sync code to pair the Responder App with this Command Dashboard. The driver enters the code once — all data flows automatically.
+                Generate a secure sync code to pair the Responder App with this Command Dashboard. The responder enters the code once — all data flows automatically.
               </p>
 
               {/* Driver + Vehicle selectors */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-2xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">Driver</label>
+                  <label className="block text-2xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">Responder</label>
                   {drivers?.length > 0 ? (
                     <select
                       value={syncDriver}
@@ -624,7 +624,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                       }}
                       className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none appearance-none"
                     >
-                      <option value="">— Guest Driver —</option>
+                      <option value="">— Guest Responder —</option>
                       {drivers.map(d => (
                         <option key={d.id} value={d.id}>{d.full_name}</option>
                       ))}
@@ -633,7 +633,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                     <input
                       value={syncDriverName}
                       onChange={e => setSyncDriverName(e.target.value)}
-                      placeholder="Driver name"
+                      placeholder="Responder name"
                       className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-violet-500/50 focus:outline-none"
                     />
                   )}
@@ -741,8 +741,8 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
               <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider">How Sync Works</p>
               {[
                 ['1', 'Generate a sync code above and share it with the driver'],
-                ['2', 'Driver opens Responder App → taps "Enter Sync Code"'],
-                ['3', 'Driver app pairs instantly — location streams to fleet map'],
+                ['2', 'Responder opens the Responder App → taps "Enter Sync Code"'],
+                ['3', 'Responder app pairs instantly — location streams to live map'],
                 ['4', 'AI agents (Sentinel + RouteMind) send reports back here'],
                 ['5', 'Send commands, alerts, and dispatch orders from the Commands tab'],
               ].map(([n, txt]) => (
@@ -835,13 +835,13 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
 
             {/* Target driver */}
             <div>
-              <label className="block text-2xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">Target Driver</label>
+              <label className="block text-2xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">Target Responder</label>
               <select
                 value={cmdDriver}
                 onChange={e => setCmdDriver(e.target.value)}
                 className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500/50 focus:outline-none appearance-none"
               >
-                <option value="">— Broadcast to All Drivers —</option>
+                <option value="">— Broadcast to All Responders —</option>
                 {activeDrivers.map(d => (
                   <option key={d.driver_id} value={d.driver_id}>{d.driver_name} ({d.vehicle_reg})</option>
                 ))}
@@ -936,7 +936,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
         {tab === 'ai' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-400">Live AI agent reports from all connected driver apps</p>
+              <p className="text-xs text-slate-400">Live AI agent reports from all connected responder apps</p>
               <button
                 onClick={() => { localStorage.removeItem('apex:ai_reports'); setAIReports([]) }}
                 className="text-2xs text-slate-600 hover:text-slate-400 transition-colors"
@@ -985,7 +985,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                 </div>
                 <p className="text-sm text-slate-500">No AI reports yet</p>
                 <p className="text-2xs text-slate-600 text-center max-w-xs">
-                  Connect a driver app to see Sentinel AI fatigue scores, RouteMind reports, and harsh event alerts in real time
+                  Connect a responder app to see Sentinel AI fatigue scores, RouteMind reports, and harsh event alerts in real time
                 </p>
               </div>
             ) : (
@@ -1436,7 +1436,7 @@ export default function Dashboard() {
         {/* ── Apex Intelligence Strip ──────────────────────────── */}
         {intelKPIs && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {/* Fleet Safety Score */}
+            {/* Welfare Safety Score */}
             <div className="bg-[#0d1426] border border-slate-800/60 rounded-xl p-3 flex flex-col gap-1">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon name="ShieldCheck" size={11} className="text-emerald-400" />
@@ -1619,20 +1619,20 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Driver App — slim summary card */}
+        {/* Responder App — slim summary card */}
         <DriverAppSummaryCard drivers={drivers} />
 
         {/* Quick actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
-            { label: 'Set Driver Up',      icon: 'Smartphone',     color: 'text-violet-400',  route: ROUTES.DRIVER_SETUP },
-            { label: 'New Dispatch Job',   icon: 'Radio',          color: 'text-cyan-400',    route: ROUTES.DISPATCH    },
+            { label: 'Set Responder Up',   icon: 'Smartphone',     color: 'text-violet-400',  route: ROUTES.DRIVER_SETUP },
+            { label: 'New Mission',        icon: 'Radio',          color: 'text-cyan-400',    route: ROUTES.DISPATCH    },
             { label: 'Report Incident',    icon: 'FileText',       color: 'text-red-400',     route: ROUTES.INCIDENTS   },
             { label: 'Safety AI',          icon: 'ShieldAlert',    color: 'text-amber-400',   route: ROUTES.SAFETY      },
             { label: 'Compliance AI',      icon: 'ClipboardCheck', color: 'text-emerald-400', route: ROUTES.COMPLIANCE  },
             { label: 'AI Intelligence',    icon: 'Brain',          color: 'text-violet-400',  route: ROUTES.AI          },
-            { label: 'Live Fleet Map',     icon: 'Map',            color: 'text-cyan-400',    route: ROUTES.NAVIGATION  },
-            { label: 'Fleet Control',      icon: 'Truck',          color: 'text-slate-400',   route: ROUTES.FLEET       },
+            { label: 'Live Map',           icon: 'Map',            color: 'text-cyan-400',    route: ROUTES.NAVIGATION  },
+            { label: 'Support Units',      icon: 'Truck',          color: 'text-slate-400',   route: ROUTES.FLEET       },
           ].map(a => (
             <button key={a.label} onClick={() => navigate(a.route)}
               className="flex items-center gap-2.5 bg-[#0d1426] border border-slate-800/60 rounded-xl px-4 py-3.5 hover:border-slate-700/60 hover:bg-slate-800/20 transition-all text-left group">
@@ -1643,7 +1643,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Fleet health bar */}
+        {/* Welfare health bar */}
         {!isEmpty && (
           <div className="bg-[#0d1426] border border-slate-800/60 rounded-xl p-5">
             <div className="flex items-center gap-2 mb-4">

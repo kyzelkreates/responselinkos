@@ -764,8 +764,8 @@ function MapPanel() {
             {ghSaving
               ? <><Icon name="Loader2" size={12} className="animate-spin" /> Saving…</>
               : ghSaved
-              ? <><Icon name="CheckCircle2" size={12} /> Saved to Fleet!</>
-              : <><Icon name="Save" size={12} /> Save to Fleet</>}
+              ? <><Icon name="CheckCircle2" size={12} /> Saved!</>
+              : <><Icon name="Save" size={12} /> Save Settings</>}
           </button>
         </div>
 
@@ -1232,7 +1232,7 @@ function FederationPanel() {
           </div>
           {[
             { label: 'Tenant ID',  val: identity.tenantId },
-            { label: 'Fleet ID',   val: identity.fleetId },
+            { label: 'Organisation ID',   val: identity.fleetId },
             { label: 'Connected',  val: identity.connectedSince ? new Date(identity.connectedSince).toLocaleString() : '—' },
             { label: 'CC Endpoint',val: identity.commandCenterUrl || '(not set)' },
           ].filter(r => r.val).map(({ label, val }) => (
@@ -1337,7 +1337,7 @@ function FederationPanel() {
             <p className="text-2xs text-slate-600">Enter credentials provided by your ResponseLink OS™ Command Dashboard manually.</p>
             {[
               { label: 'Tenant ID',    val: manualTenant, set: setManualTenant, ph: 'TENANT-…' },
-              { label: 'Fleet ID',     val: manualFleet,  set: setManualFleet,  ph: 'FE-…' },
+              { label: 'Organisation ID',     val: manualFleet,  set: setManualFleet,  ph: 'FE-…' },
               { label: 'Pairing Token',val: manualToken,  set: setManualToken,  ph: 'Pairing token from Command Center' },
             ].map(({ label, val, set, ph }) => (
               <div key={label} className="space-y-1">
@@ -1373,7 +1373,7 @@ function FederationPanel() {
               ['2', 'In Command Dashboard → Settings → Register, enter the code'],
               ['3', 'Command Center validates format: APEX-[A-Z0-9]{8}-[A-Z0-9]{4}-FC'],
               ['4', 'On acceptance, Supabase realtime notifies this panel automatically'],
-              ['5', 'Fleet node registered — telemetry, KPIs, and dispatch sync live'],
+              ['5', 'Organisation node registered — telemetry, KPIs, and dispatch sync live'],
             ].map(([n, txt]) => (
               <div key={n} className="flex gap-3">
                 <span className="text-2xs font-bold text-violet-400 flex-shrink-0 w-4">{n}</span>

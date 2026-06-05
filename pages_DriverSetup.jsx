@@ -384,7 +384,7 @@ export default function DriverSetup() {
         <Icon name="ShieldCheck" size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
         <div className="text-xs text-slate-400 leading-relaxed">
           <strong className="text-amber-300">Security isolation active.</strong>{' '}
-          Drivers use the standalone <span className="text-violet-300 font-mono font-semibold">Responder App</span> —
+          Responders use the standalone <span className="text-violet-300 font-mono font-semibold">Responder App</span> —
           a completely separate interface with no access to fleet management, vehicle data, or driver records.
           Pairing codes are one-time-use and expire in 60 minutes.{' '}
           <strong className="text-amber-300">Never share the command dashboard URL with responders.</strong>
@@ -561,11 +561,11 @@ export default function DriverSetup() {
 
                   {/* Driver instructions */}
                   <div className="bg-slate-900/50 border border-slate-800/40 rounded-xl p-4 space-y-2">
-                    <p className="text-2xs text-slate-500 font-semibold uppercase tracking-wider">Driver Instructions</p>
+                    <p className="text-2xs text-slate-500 font-semibold uppercase tracking-wider">Responder Instructions</p>
                     {[
                       { n: '1', text: 'Open the Responder App link on your phone' },
                       { n: '2', text: 'Tap "Enter Pairing Code" on the welcome screen' },
-                      { n: '3', text: `Paste the full APXS-… code in the Driver App` },
+                      { n: '3', text: `Paste the full APXS-… code in the Responder App` },
                       { n: '4', text: 'Set a PIN and confirm your name — you\'re connected!' },
                     ].map(s => (
                       <div key={s.n} className="flex items-start gap-2.5">
@@ -599,7 +599,7 @@ export default function DriverSetup() {
                     <img src={pairingQR.qrUrl} alt="Driver pairing QR code" className="w-52 h-52 block" />
                   </div>
                   <p className="text-2xs text-slate-600 text-center leading-relaxed">
-                    Driver scans QR → opens Responder App → code pre-filled automatically
+                    Responder scans QR → opens Responder App → code pre-filled automatically
                   </p>
                   <a
                     href={pairingQR.qrUrl}
@@ -632,7 +632,7 @@ export default function DriverSetup() {
                   { icon: 'Lock', color: 'text-emerald-400', title: 'Secure isolation', desc: 'Driver app is completely separate from fleet management — drivers see only navigation and their own data' },
                   { icon: 'Gauge', color: 'text-cyan-400', title: 'Live telemetry', desc: 'GPS, speed, heading, and AI safety scores stream to command dashboard in real time' },
                   { icon: 'BrainCircuit', color: 'text-violet-400', title: 'AI Sentinel onboard', desc: 'Fatigue detection, harsh event monitoring, and driving performance AI run locally on the driver device' },
-                  { icon: 'MessageSquare', color: 'text-blue-400', title: 'Two-way messaging', desc: 'Fleet operators and drivers can message each other directly through the paired channel' },
+                  { icon: 'MessageSquare', color: 'text-blue-400', title: 'Two-way messaging', desc: 'Command operators and responders can message each other directly through the paired channel' },
                   { icon: 'Navigation', color: 'text-amber-400', title: 'Smart navigation', desc: 'GraphHopper / Google Maps routing with AI-generated route guidance via Apex RouteMind' },
                 ].map(f => (
                   <div key={f.title} className="flex items-start gap-3">
@@ -763,7 +763,7 @@ export default function DriverSetup() {
             <div className="flex flex-col items-center py-16 gap-3 text-slate-700">
               <Icon name="Gauge" size={36} className="opacity-15" />
               <p className="text-sm">No live telemetry yet</p>
-              <p className="text-xs text-slate-800">Pair a driver and enable GPS in the Responder App</p>
+              <p className="text-xs text-slate-800">Pair a responder and enable GPS in the Responder App</p>
             </div>
           )}
 

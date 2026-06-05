@@ -8,7 +8,7 @@
  * Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
  *
  * ARCHITECTURE NOTE (Run 1):
- * This file was previously the Fleet Control OS route registry.
+ * This file was previously the Fleet OS route registry — now ResponseLink OS™ Route Registry.
  * Safely rebranded and extended for ResponseLink OS™ in Run 1.
  * Technical route paths preserved to avoid breaking existing logic.
  * Display labels converted to welfare/mobile-response language.

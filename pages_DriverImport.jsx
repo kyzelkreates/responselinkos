@@ -100,7 +100,7 @@ export default function DriverImport() {
               </button>
               <button onClick={() => navigate('/ap3x')}
                 className="w-full text-slate-600 text-xs hover:text-slate-400 transition-colors">
-                Skip → Go to Driver App
+                Skip → Go to Responder App
               </button>
             </>
           )}

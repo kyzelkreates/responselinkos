@@ -1750,7 +1750,7 @@ function DriverAppMain({ profile, onLogout }) {
   const TABS = [
     { key: 'map',    label: 'Nav',    icon: 'Map'           },
     { key: 'safety', label: 'Safety', icon: 'Shield'        },
-    { key: 'chat',   label: 'Fleet',  icon: 'MessageSquare', badge: unread },
+    { key: 'chat',   label: 'Messages',  icon: 'MessageSquare', badge: unread },
     { key: 'jobs',   label: 'Jobs',   icon: 'Package',       badge: jobs.filter(j=>j.status==='pending'||!j.status).length },
   ]
 

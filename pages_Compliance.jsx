@@ -92,7 +92,7 @@ function ComplianceModal({ record, onClose, onSaved }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { k: 'name',        l: 'Record Name',  req: true },
-              { k: 'entity_name', l: 'Entity (Driver/Vehicle)', req: false },
+              { k: 'entity_name', l: 'Entity (Responder/Vehicle)', req: false },
               { k: 'document_ref', l: 'Document Ref', req: false },
               { k: 'expiry_date', l: 'Expiry Date',  req: false, t: 'date' },
             ].map(({ k, l, req, t }) => (

@@ -334,7 +334,7 @@ export default function AP3X() {
         {[
           { key: 'job',  label: 'Current Job',           icon: 'Package'      },
           { key: 'map',  label: 'Map',                   icon: 'Map'          },
-          { key: 'chat', label: 'Fleet Chat',            icon: 'MessageSquare'},
+          { key: 'chat', label: 'Team Chat',            icon: 'MessageSquare'},
           { key: 'all',  label: `All Jobs (${jobs.length})`, icon: 'List'    },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
@@ -406,7 +406,7 @@ export default function AP3X() {
         )}
       </div>
 
-        {/* Tab: Fleet Chat */}
+        {/* Tab: Team Chat */}
         {tab === 'chat' && (
           <div className="flex flex-col h-[calc(100vh-280px)] min-h-[300px] px-3 pb-2">
             {/* Message list */}

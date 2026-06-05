@@ -271,7 +271,7 @@ function CreateJobModal({ routeData, drivers, vehicles, onClose, onCreated }) {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium">Assign Driver</label>
+              <label className="text-xs text-slate-400 font-medium">Assign Responder</label>
               <select value={driverId} onChange={e => setDriverId(e.target.value)}
                 className="w-full bg-slate-900/70 border border-slate-800/60 rounded-lg text-xs text-slate-300 px-3 py-2 outline-none focus:border-cyan-500/40">
                 <option value="">Select driver…</option>
@@ -572,7 +572,7 @@ export default function Navigation() {
         id:       `driver-${pos.vehicle_id}`,
         lat:      pos.lat,
         lng:      pos.lng,
-        label:    pos.vehicle_id || 'Driver',
+        label:    pos.vehicle_id || 'Responder',
         sublabel: `${pos.speed ?? 0} km/h · Live`,
         status:   'active',
         speed:    pos.speed,
@@ -672,7 +672,7 @@ export default function Navigation() {
           />
         </Suspense>
 
-        {/* Fleet Sidebar */}
+        {/* Live Map Sidebar */}
         <FleetSidebar vehicles={vehicles} activeId={selectedVehicle?.id}
           onSelect={handleSelectVehicle} isLoading={isLoading} />
 

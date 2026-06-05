@@ -100,7 +100,7 @@ function DriverSyncModal({ job, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800/60">
           <div>
-            <h2 className="font-display font-semibold text-white text-sm">Send to Driver</h2>
+            <h2 className="font-display font-semibold text-white text-sm">Send to Responder</h2>
             <p className="text-slate-500 text-2xs mt-0.5 truncate max-w-[260px]">{job.title}</p>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white p-1.5 rounded-md hover:bg-slate-800/60">
@@ -358,7 +358,7 @@ function JobCard({ job, onAssign, onIntel, onCancel, onComplete, onSync }) {
             </button>
             <button onClick={() => onAssign?.(job)}
               className="w-full sm:flex-1 py-2 sm:py-1.5 text-xs bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-1.5">
-              <Icon name="UserCheck" size={12} />Assign Driver
+              <Icon name="UserCheck" size={12} />Assign Responder
             </button>
           </>
         )}
@@ -366,7 +366,7 @@ function JobCard({ job, onAssign, onIntel, onCancel, onComplete, onSync }) {
           <>
             <button onClick={() => onSync?.(job)}
               className="w-full sm:flex-1 py-2 sm:py-1.5 text-xs bg-violet-500/10 border border-violet-500/25 text-violet-400 rounded-lg hover:bg-violet-500/20 transition-colors flex items-center justify-center gap-1.5">
-              <Icon name="Send" size={12} />Send to Driver
+              <Icon name="Send" size={12} />Send to Responder
             </button>
             <button onClick={() => onComplete?.(job.id)}
               className="w-full sm:w-auto py-2 sm:py-1.5 px-3 text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition-colors flex items-center justify-center gap-1.5">
@@ -716,7 +716,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
           {/* Assign */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium">Assign Driver</label>
+              <label className="text-xs text-slate-400 font-medium">Assign Responder</label>
               <select className="apex-input w-full" value={form.driver_id} onChange={e => set('driver_id', e.target.value)}>
                 <option value="">— Unassigned —</option>
                 {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name || d.name}</option>)}

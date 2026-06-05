@@ -243,7 +243,7 @@ const PERIODS = [
 // ─── Tab nav ──────────────────────────────────────────────────
 const TABS = [
   { key: 'overview',  label: 'Overview',  icon: 'LayoutDashboard' },
-  { key: 'fleet',     label: 'Fleet',     icon: 'Truck'           },
+  { key: 'fleet',     label: 'Support Units',     icon: 'Truck'           },
   { key: 'drivers',   label: 'Drivers',   icon: 'Users'           },
   { key: 'safety',    label: 'Safety',    icon: 'ShieldCheck'     },
   { key: 'ai',        label: 'AI Reports',icon: 'Cpu'             },
@@ -287,7 +287,7 @@ function OverviewTab({ timeSeries, period, vehicles, drivers, aiReports, alerts 
     <div className="space-y-5">
       {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
-        <KpiCard label="Fleet Size"   value={vehicles.length}        icon="Truck"       color="text-cyan-400"    sparkData={timeSeries} sparkKey="utilisation" sparkColor={C.cyan}    sub={`${drivers.length} drivers`} />
+        <KpiCard label="Support Units"   value={vehicles.length}        icon="Truck"       color="text-cyan-400"    sparkData={timeSeries} sparkKey="utilisation" sparkColor={C.cyan}    sub={`${drivers.length} responders`} />
         <KpiCard label="Total Trips"  value={totals.trips}           icon="Route"       color="text-violet-400"  sparkData={timeSeries} sparkKey="trips"       sparkColor={C.violet}  sub={`${period}-day period`} />
         <KpiCard label="Distance"     value={`${(totals.distance / 1000).toFixed(1)}K`} unit="km" icon="Gauge"  color="text-emerald-400" sparkData={timeSeries} sparkKey="distance"   sparkColor={C.emerald} />
         <KpiCard label="Incidents"    value={totals.incidents}       icon="AlertTriangle" color={totals.incidents > 5 ? 'text-red-400' : 'text-amber-400'} sparkData={timeSeries} sparkKey="incidents" sparkColor={C.red} />
@@ -327,7 +327,7 @@ function OverviewTab({ timeSeries, period, vehicles, drivers, aiReports, alerts 
           </ChartCard>
         </div>
 
-        <ChartCard title="Fleet Status" subtitle="Live vehicle breakdown">
+        <ChartCard title="Support Units Status" subtitle="Live vehicle breakdown">
           {fleetPie.length === 0
             ? <EmptyState icon="Truck" message="No vehicles" sub="Add vehicles to see fleet status" />
             : <>
@@ -358,7 +358,7 @@ function OverviewTab({ timeSeries, period, vehicles, drivers, aiReports, alerts 
 
       {/* Utilisation + incidents */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <ChartCard title="Fleet Utilisation" subtitle={`Daily % · ${period} days`}>
+        <ChartCard title="Unit Utilisation" subtitle={`Daily % · ${period} days`}>
           {!hasData
             ? <EmptyState icon="Activity" message="No telemetry data" sub="Appears once AP3X driver app is active" />
             : <ResponsiveContainer width="100%" height={180}>
@@ -410,12 +410,12 @@ function FleetTab({ timeSeries, period, vehicles }) {
       {/* Vehicle status table */}
       <ChartCard title="Vehicle Status Summary" subtitle="Current fleet state — live from database">
         {vehicles.length === 0
-          ? <EmptyState icon="Truck" message="No vehicles in database" sub="Add vehicles via the Fleet page to see them here" />
+          ? <EmptyState icon="Truck" message="No vehicles in database" sub="Add vehicles via the Support Units page to see them here" />
           : <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-800/60">
-                    {['Registration','Driver','Status','Fuel','Odometer','Last Service'].map(h => (
+                    {['Registration','Responder','Status','Fuel','Odometer','Last Service'].map(h => (
                       <th key={h} className="text-left text-2xs text-slate-600 tracking-wider uppercase pb-2 pr-4 font-semibold">{h}</th>
                     ))}
                   </tr>
@@ -455,7 +455,7 @@ function FleetTab({ timeSeries, period, vehicles }) {
       </ChartCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <ChartCard title="Fleet Utilisation Trend" subtitle={`${period} days vs 80% target`}>
+        <ChartCard title="Unit Utilisation Trend" subtitle={`${period} days vs 80% target`}>
           {!timeSeries.some(d => d.utilisation > 0)
             ? <EmptyState icon="Activity" message="No utilisation data" sub="Appears once drivers start using AP3X app" />
             : <ResponsiveContainer width="100%" height={200}>
@@ -581,12 +581,12 @@ function DriversTab({ drivers, aiReports, telemetryRows, period }) {
   }, [drivers, driverStats, driverFatigue])
 
   if (enriched.length === 0) {
-    return <EmptyState icon="Users" message="No driver data yet" sub="Drivers appear here once added to the fleet or once they log into the AP3X Driver app" />
+    return <EmptyState icon="Users" message="No responder data yet" sub="Responders appear here once added or once they log into the Responder App" />
   }
 
   return (
     <div className="space-y-5">
-      <ChartCard title="Driver Performance" subtitle={`Real data · last ${period} days`}>
+      <ChartCard title="Responder Performance" subtitle={`Real data · last ${period} days`}>
         <div className="space-y-3">
           {enriched.map((d, i) => {
             const score = d.safety_score ?? 0
@@ -655,7 +655,7 @@ function DriversTab({ drivers, aiReports, telemetryRows, period }) {
 
       {/* Trip distance per driver bar chart */}
       {enriched.some(d => d.distance > 0) && (
-        <ChartCard title="Distance by Driver" subtitle={`Total km · last ${period} days`}>
+        <ChartCard title="Distance by Responder" subtitle={`Total km · last ${period} days`}>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart
               data={enriched.filter(d => d.distance > 0).map(d => ({ name: d.full_name?.split(' ')[0] || d.id.slice(0,6), distance: d.distance }))}
@@ -777,7 +777,7 @@ function SafetyTab({ timeSeries, period, alerts }) {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-800/60">
-                    {['Time','Driver','Vehicle','Type','Severity','Status'].map(h => (
+                    {['Time','Responder','Vehicle','Type','Severity','Status'].map(h => (
                       <th key={h} className="text-left text-2xs text-slate-600 tracking-wider uppercase pb-2 pr-4 font-semibold">{h}</th>
                     ))}
                   </tr>
@@ -879,7 +879,7 @@ function AIReportsTab({ aiReports, period }) {
         </ChartCard>
 
         {/* Fatigue trend */}
-        <ChartCard title="Fleet Fatigue Trend" subtitle="Average fatigue score from Sentinel">
+        <ChartCard title="Responder Fatigue Trend" subtitle="Average fatigue score from Sentinel">
           {fatigueTrend.length < 2
             ? <EmptyState icon="Eye" message="Not enough fatigue data" sub="Fatigue scores reported by Apex Sentinel in the driver app" />
             : <ResponsiveContainer width="100%" height={180}>

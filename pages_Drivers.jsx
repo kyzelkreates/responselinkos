@@ -62,7 +62,7 @@ export default function Drivers() {
             </p>
           </div>
           <button onClick={() => setModal('create')} className="btn-primary text-sm px-4 py-2">
-            <Icon name="UserPlus" size={14} /> Add Driver
+            <Icon name="UserPlus" size={14} /> Add Responder
           </button>
         </div>
         {/* Status tabs */}
