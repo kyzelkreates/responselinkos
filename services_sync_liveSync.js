@@ -107,7 +107,7 @@ export function decodeToken(code) {
   if (payload.v !== 1) return { ok: false, error: 'Unsupported code version' }
   if (!payload.d || !payload.e) return { ok: false, error: 'Code is missing required fields' }
   if (Math.floor(Date.now() / 1000) > payload.e) {
-    return { ok: false, error: 'Code has expired — ask your fleet manager for a new one' }
+    return { ok: false, error: 'Code has expired — ask your command supervisor for a new one' }
   }
   return { ok: true, payload }
 }
@@ -533,7 +533,7 @@ export async function copySyncCode(code) {
 
 export function shareSyncCodeWhatsApp(code, driverName, vehicleReg) {
   const url = `${window.location.origin}${window.location.pathname}#/driver-app?sync=${encodeURIComponent(code)}`
-  const msg = `*Apex AI Fleet Control — Driver Sync*\n\n🚛 Driver: ${driverName}\n🚘 Vehicle: ${vehicleReg}\n\n*Sync Code:*\n\`${code}\`\n\n📱 Open the AP3X Driver App and paste this code to connect, or tap:\n${url}\n\n_Code expires in 1 hour._`
+  const msg = `*ResponseLink OS™ — Responder Sync*\n\n👤 Responder: ${driverName}\n📋 Reference: ${vehicleReg}\n\n*Sync Code:*\n\`${code}\`\n\n📱 Open the Responder App and paste this code to connect, or tap:\n${url}\n\n_Code expires in 1 hour._`
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer')
 }
 

@@ -65,7 +65,7 @@ export default function DriverImport() {
                 <Icon name="CheckCircle" size={24} className="text-emerald-400" />
               </div>
               <p className="text-white font-semibold text-sm">{msg}</p>
-              <p className="text-slate-500 text-xs">Redirecting to driver app…</p>
+              <p className="text-slate-500 text-xs">Redirecting to responder app…</p>
             </>
           )}
 

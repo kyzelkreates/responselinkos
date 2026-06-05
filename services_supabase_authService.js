@@ -34,10 +34,10 @@ export const USER_ROLES = {
 export const ROLE_LABELS = {
   super_admin:    'Super Admin',
   fleet_admin:    'Fleet Admin',
-  fleet_manager:  'Fleet Manager',
+  fleet_manager:  'Supervisor',
   dispatcher:     'Dispatcher',
   compliance:     'Compliance Officer',
-  driver:         'Driver',
+  driver:         'Responder',
   viewer:         'Viewer',
 }
 

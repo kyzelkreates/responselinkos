@@ -177,7 +177,7 @@ function ActivityFeed({ vehicles, alerts, drivers }) {
   if (events.length === 0) return (
     <div className="flex flex-col items-center py-8 text-slate-700 gap-2">
       <Icon name="Activity" size={24} className="opacity-20" />
-      <span className="text-xs">No activity yet — add vehicles and drivers to get started</span>
+      <span className="text-xs">No activity yet — add support units and responders to get started</span>
     </div>
   )
   return (
@@ -214,7 +214,7 @@ function EmptyFleet({ navigate }) {
       <div className="flex gap-2">
         <button onClick={() => navigate(ROUTES.FLEET)}
           className="text-2xs text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1.5 rounded-lg hover:bg-cyan-500/15 transition-colors flex items-center gap-1">
-          <Icon name="Plus" size={11} /> Add Vehicle
+          <Icon name="Plus" size={11} /> Add Support Unit
         </button>
         <button onClick={() => navigate(ROUTES.DRIVERS)}
           className="text-2xs text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5 rounded-lg hover:bg-violet-500/15 transition-colors flex items-center gap-1">
@@ -744,7 +744,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                 ['2', 'Responder opens the Responder App → taps "Enter Sync Code"'],
                 ['3', 'Responder app pairs instantly — location streams to live map'],
                 ['4', 'AI agents (Sentinel + RouteMind) send reports back here'],
-                ['5', 'Send commands, alerts, and dispatch orders from the Commands tab'],
+                ['5', 'Send commands, alerts, and mission orders from the Commands tab'],
               ].map(([n, txt]) => (
                 <div key={n} className="flex items-start gap-2">
                   <span className="w-4 h-4 rounded-full bg-violet-500/20 text-violet-400 text-2xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{n}</span>
@@ -831,7 +831,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
         {/* ══ TAB: COMMANDS ══ */}
         {tab === 'commands' && (
           <div className="space-y-4">
-            <p className="text-xs text-slate-400">Send real-time commands, alerts, and dispatch orders to connected drivers</p>
+            <p className="text-xs text-slate-400">Send real-time commands, alerts, and mission orders to connected responders</p>
 
             {/* Target driver */}
             <div>
@@ -906,7 +906,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                   : 'bg-violet-500/20 border border-violet-500/30 text-violet-300 hover:bg-violet-500/30 disabled:opacity-40 disabled:cursor-not-allowed'
               }`}
             >
-              {cmdSent ? <><Icon name="CheckCircle" size={15} /> Sent!</> : <><Icon name="Send" size={15} /> Send {cmdType === 'message' ? 'Message' : cmdType === 'alert' ? 'Alert' : 'Dispatch Order'}</>}
+              {cmdSent ? <><Icon name="CheckCircle" size={15} /> Sent!</> : <><Icon name="Send" size={15} /> Send {cmdType === 'message' ? 'Message' : cmdType === 'alert' ? 'Alert' : 'Mission Order'}</>}
             </button>
 
             {/* Quick command buttons */}
@@ -1420,8 +1420,8 @@ export default function Dashboard() {
         })()}
         {/* KPI Row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <KpiCard label="Active Vehicles" value={activeVehicles}  sub={`of ${vehicles.length} total`}  icon="Truck"       color="text-cyan-400"    bg="bg-cyan-500/5"    border="border-cyan-500/10"   onClick={() => navigate(ROUTES.FLEET)} />
-          <KpiCard label="Idle"            value={idleVehicles}    sub="vehicles idle"                   icon="PauseCircle" color="text-amber-400"   bg="bg-amber-500/5"   border="border-amber-500/10"  onClick={() => navigate(ROUTES.FLEET)} />
+          <KpiCard label="Active Units" value={activeVehicles}  sub={`of ${vehicles.length} total`}  icon="Truck"       color="text-cyan-400"    bg="bg-cyan-500/5"    border="border-cyan-500/10"   onClick={() => navigate(ROUTES.FLEET)} />
+          <KpiCard label="Idle"            value={idleVehicles}    sub="units idle"                   icon="PauseCircle" color="text-amber-400"   bg="bg-amber-500/5"   border="border-amber-500/10"  onClick={() => navigate(ROUTES.FLEET)} />
           <KpiCard label="Maintenance"     value={maintenanceVeh}  sub="off the road"                    icon="Wrench"      color="text-violet-400"  bg="bg-violet-500/5"  border="border-violet-500/10" onClick={() => navigate(ROUTES.FLEET)} />
           <KpiCard label="Active Drivers"  value={activeDrivers}   sub={`of ${drivers.length} total`}   icon="Users"       color="text-emerald-400" bg="bg-emerald-500/5" border="border-emerald-500/10" onClick={() => navigate(ROUTES.DRIVERS)} />
           <KpiCard label="Open Alerts"     value={alerts.length}   sub={criticalAlerts > 0 ? `${criticalAlerts} critical` : 'all clear'}
@@ -1533,7 +1533,7 @@ export default function Dashboard() {
                 {vehicles.filter(v => v.status === 'active').length === 0 && (
                   <div className="flex flex-col items-center py-6 text-slate-700 gap-1.5">
                     <Icon name="Truck" size={24} className="opacity-20" />
-                    <span className="text-xs">No active vehicles — set status to Active in Fleet</span>
+                    <span className="text-xs">No active support units — set status to Active in Fleet</span>
                   </div>
                 )}
               </Section>
@@ -1579,7 +1579,7 @@ export default function Dashboard() {
                   {mapMarkers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-700">
                       <Icon name="MapPin" size={28} className="opacity-20" />
-                      <span className="text-xs text-center px-8">No vehicles with GPS coordinates yet.<br/>GPS comes from the driver AP3X app.</span>
+                      <span className="text-xs text-center px-8">No responders with location data yet.<br/>Location comes from the Responder App.</span>
                     </div>
                   ) : (
                     <Suspense fallback={
@@ -1662,7 +1662,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { label: 'Operational',   val: vehicles.filter(v => v.status !== 'maintenance' && v.status !== 'decommissioned').length, total: vehicles.length, color: 'bg-cyan-500' },
-                { label: 'On Route',      val: vehicles.filter(v => v.status === 'active').length,      total: vehicles.length, color: 'bg-emerald-500' },
+                { label: 'On Mission',      val: vehicles.filter(v => v.status === 'active').length,      total: vehicles.length, color: 'bg-emerald-500' },
                 { label: 'Maintenance',   val: maintenanceVeh,                                           total: vehicles.length, color: 'bg-amber-500' },
                 { label: 'Open Alerts',   val: alerts.length,                                            total: Math.max(alerts.length, 10), color: 'bg-red-500' },
               ].map(s => (

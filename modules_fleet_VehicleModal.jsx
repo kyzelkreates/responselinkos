@@ -248,7 +248,7 @@ export default function VehicleModal({ vehicle, onClose, onSaved }) {
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800/50 flex-shrink-0">
           <div>
             <h2 className="font-semibold text-white text-sm">
-              {isEdit ? `Edit — ${vehicle.reg_number}` : 'Add Vehicle'}
+              {isEdit ? `Edit — ${vehicle.reg_number}` : 'Add Support Unit'}
             </h2>
             <p className="text-2xs text-slate-600 mt-0.5">Full legal &amp; safety compliance · {SECTIONS.length} sections</p>
           </div>
@@ -1108,7 +1108,7 @@ export default function VehicleModal({ vehicle, onClose, onSaved }) {
             <button onClick={handleSave} disabled={saving}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold transition-colors disabled:opacity-40">
               <Icon name={saving ? 'Loader2' : 'Check'} size={12} className={saving ? 'animate-spin' : ''} />
-              {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Vehicle'}
+              {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Support Unit'}
             </button>
           </div>
         </div>

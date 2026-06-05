@@ -684,14 +684,14 @@ function MapPanel() {
   }
 
   const CONSTRAINT_DEFS = [
-    { key: 'enforceHeightRestrictions', label: 'Enforce height restrictions',   sub: 'Avoid roads with clearance below vehicle height' },
-    { key: 'enforceWeightRestrictions', label: 'Enforce weight restrictions',   sub: 'Avoid roads with weight limits below vehicle GVW' },
+    { key: 'enforceHeightRestrictions', label: 'Enforce height restrictions',   sub: 'Avoid roads with clearance restrictions' },
+    { key: 'enforceWeightRestrictions', label: 'Enforce weight restrictions',   sub: 'Avoid roads with weight restrictions' },
     { key: 'enforceHazmatRestrictions', label: 'Enforce hazmat restrictions',   sub: 'Avoid hazmat-prohibited roads for flagged vehicles' },
-    { key: 'preferTruckRoutes',         label: 'Prefer designated truck routes', sub: 'Route via HGV-friendly corridors where available' },
+    { key: 'preferTruckRoutes',         label: 'Prefer designated access routes', sub: 'Route via appropriate access corridors where available' },
     { key: 'requestAlternatives',       label: 'Fetch alternative routes',      sub: 'Show up to 3 route options ranked by safety score' },
-    { key: 'elevationAnalysis',         label: 'Gradient / elevation analysis', sub: 'Flag steep sections for heavy vehicles' },
+    { key: 'elevationAnalysis',         label: 'Gradient / elevation analysis', sub: 'Flag steep sections where relevant' },
     { key: 'avoidTollRoads',            label: 'Avoid toll roads',              sub: 'Prefer toll-free routes (may add journey time)' },
-    { key: 'avoidMotorways',            label: 'Avoid motorways',               sub: 'Local/A-road routing only — not recommended for HGV' },
+    { key: 'avoidMotorways',            label: 'Avoid motorways',               sub: 'Local/A-road routing only' },
     { key: 'avoidFerries',              label: 'Avoid ferries',                 sub: 'Keep routing land-only' },
   ]
 
@@ -709,7 +709,7 @@ function MapPanel() {
               {ghKey && <span className="text-2xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">Key saved</span>}
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Required for intelligent vehicle-aware routing — enforces height, weight, hazmat and legal restrictions.
+              Required for intelligent route planning — enforces access restrictions where configured.
               Saved to Supabase so Command Dashboard and all Responder PWAs share it automatically.
             </p>
           </div>
@@ -792,7 +792,7 @@ function MapPanel() {
         <div className="px-4 py-3 border-b border-slate-800/60 flex items-center justify-between">
           <div>
             <div className="text-xs font-semibold text-white">Vehicle & Legal Constraints</div>
-            <div className="text-2xs text-slate-600 mt-0.5">Applied fleet-wide when GraphHopper plans routes</div>
+            <div className="text-2xs text-slate-600 mt-0.5">Applied across all responders when GraphHopper plans routes</div>
           </div>
           <button
             onClick={handleSaveConstraints}
@@ -881,7 +881,7 @@ function MapPanel() {
           {mapKeySaved ? <><Icon name="CheckCircle2" size={14} /> Saved!</> : <><Icon name="Save" size={14} /> Save Map Keys</>}
         </button>
         <p className="text-2xs text-slate-700 text-center">
-          These keys are stored in your browser only. GraphHopper key above is synced fleet-wide via Supabase.
+          These keys are stored in your browser only. GraphHopper key above is synced across all responders via Supabase.
         </p>
       </div>
 

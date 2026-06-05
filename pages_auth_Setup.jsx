@@ -168,7 +168,7 @@ export default function Setup() {
                 </div>
               </div>
               <Field label="Username *"    value={driver.username} onChange={setD('username')} placeholder="e.g. driver1" />
-              <Field label="Email (optional)" type="email" value={driver.email}    onChange={setD('email')}    placeholder="driver@fleet.io" required={false} />
+              <Field label="Email (optional)" type="email" value={driver.email}    onChange={setD('email')}    placeholder="responder@organisation.io" required={false} />
               <Field label="Password *"    type="password" value={driver.password} onChange={setD('password')} placeholder="Min 6 characters"
                      show={showPass.dp} onToggle={() => toggle('dp')} />
               <Field label="Confirm Password *" type="password" value={driver.confirm}  onChange={setD('confirm')}  placeholder="Repeat password"

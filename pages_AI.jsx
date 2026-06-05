@@ -38,9 +38,9 @@ function ProviderHealthStrip() {
 
 // ─── Module status cards ──────────────────────────────────────
 const MODULE_CARDS = [
-  { id: AI_MODULES.APEX_SENTINEL,   label: 'Apex Sentinel',   icon: 'ShieldAlert',    color: 'text-red-400',     bg: 'bg-red-500/5',     border: 'border-red-500/15',    desc: 'Real-time driver safety monitoring and risk scoring' },
-  { id: AI_MODULES.APEX_ROUTEMIND,  label: 'Apex RouteMind',  icon: 'Navigation',     color: 'text-violet-400',  bg: 'bg-violet-500/5',  border: 'border-violet-500/15', desc: 'Intelligent route optimisation and ETA prediction'    },
-  { id: AI_MODULES.APEX_COMPLIANCE, label: 'Apex Compliance', icon: 'ClipboardCheck', color: 'text-emerald-400', bg: 'bg-emerald-500/5', border: 'border-emerald-500/15',desc: 'UK/EU fleet regulatory compliance guidance'           },
+  { id: AI_MODULES.APEX_SENTINEL,   label: 'Apex Sentinel',   icon: 'ShieldAlert',    color: 'text-red-400',     bg: 'bg-red-500/5',     border: 'border-red-500/15',    desc: 'Real-time responder welfare monitoring and advisory risk scoring' },
+  { id: AI_MODULES.APEX_ROUTEMIND,  label: 'Apex RouteMind',  icon: 'Navigation',     color: 'text-violet-400',  bg: 'bg-violet-500/5',  border: 'border-violet-500/15', desc: 'Intelligent mission routing and visit time estimation'    },
+  { id: AI_MODULES.APEX_COMPLIANCE, label: 'Apex Compliance', icon: 'ClipboardCheck', color: 'text-emerald-400', bg: 'bg-emerald-500/5', border: 'border-emerald-500/15',desc: 'UK/EU welfare and outreach compliance guidance'           },
   { id: AI_MODULES.APEX_PREDICT,    label: 'Apex Predict',    icon: 'TrendingUp',     color: 'text-amber-400',   bg: 'bg-amber-500/5',   border: 'border-amber-500/15',  desc: 'Predictive analytics and maintenance forecasting'    },
 ]
 

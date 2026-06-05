@@ -148,7 +148,7 @@ export default function DashcamView({ driverId, taskId, onBack }) {
       {/* Notice */}
       <div className="bg-slate-900/60 border-b border-slate-800/50 px-4 py-1.5 flex items-center gap-2 flex-shrink-0">
         <Icon name="Shield" size={11} className="text-cyan-500" />
-        <span className="text-xs text-slate-500">Driver Safety Recording Active · On-Device AI Processing · Evidence Capture Mode</span>
+        <span className="text-xs text-slate-500">Welfare Safety Recording Active · On-Device AI Processing · Evidence Capture Mode</span>
       </div>
 
       {/* Camera feed */}

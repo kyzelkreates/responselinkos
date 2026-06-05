@@ -116,8 +116,8 @@ function IncidentModal({ initial, onClose, onSaved }) {
               <input type="datetime-local" value={form.incident_date} onChange={e => set('incident_date', e.target.value)} className="apex-input" />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium">Driver</label>
-              <input value={form.driver_name} onChange={e => set('driver_name', e.target.value)} className="apex-input" placeholder="Driver name" />
+              <label className="text-xs text-slate-400 font-medium">Responder</label>
+              <input value={form.driver_name} onChange={e => set('driver_name', e.target.value)} className="apex-input" placeholder="Responder name" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs text-slate-400 font-medium">Vehicle Reg</label>

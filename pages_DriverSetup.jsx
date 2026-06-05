@@ -75,7 +75,7 @@ function ApiKeysBadge() {
   )
   return (
     <div className="mt-2 flex flex-wrap gap-1 justify-center">
-      <span className="text-2xs text-emerald-600">✓ Forwarding {keys.length} API key{keys.length > 1 ? 's' : ''} to driver app:</span>
+      <span className="text-2xs text-emerald-600">✓ Forwarding {keys.length} API key{keys.length > 1 ? 's' : ''} to responder app:</span>
       {keys.map(k => (
         <span key={k} className="text-2xs text-emerald-400 bg-emerald-500/8 border border-emerald-500/15 px-1.5 rounded font-mono">{k}</span>
       ))}
@@ -583,7 +583,7 @@ export default function DriverSetup() {
             {!pairingCode && (
               <div className="flex flex-col items-center justify-center py-10 text-slate-700 gap-3">
                 <Icon name="KeyRound" size={32} className="opacity-20" />
-                <p className="text-sm">Generate a code above to share the driver app</p>
+                <p className="text-sm">Generate a code above to share the responder app</p>
               </div>
             )}
           </div>

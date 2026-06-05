@@ -197,7 +197,7 @@ function DriverSyncModal({ job, onClose }) {
                     <img src={qr.url} alt="Sync QR Code" width={200} height={200} className="rounded-lg" />
                   </div>
                   <p className="text-slate-600 text-2xs text-center">
-                    Scan with phone camera · Opens in AP3X driver app
+                    Scan with phone camera · Opens in Responder App
                   </p>
                   <a href={qr.link} className="text-cyan-400 text-2xs underline break-all text-center max-w-full"
                      target="_blank" rel="noreferrer">Open link</a>
@@ -218,7 +218,7 @@ function DriverSyncModal({ job, onClose }) {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   type="email"
-                  placeholder="driver@fleet.io"
+                  placeholder="responder@organisation.io"
                   className="w-full bg-slate-900/60 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-700 outline-none focus:border-cyan-500/40"
                 />
               </div>
@@ -352,7 +352,7 @@ function JobCard({ job, onAssign, onIntel, onCancel, onComplete, onSync }) {
             <button
               onClick={() => onIntel?.(job)}
               className="text-slate-500 hover:text-violet-400 p-1.5 rounded hover:bg-violet-500/10 transition-colors"
-              title="AI Dispatch Engine"
+              title="AI Mission Engine"
             >
               <Icon name="Cpu" size={13} />
             </button>
@@ -420,14 +420,14 @@ function AssignModal({ job, drivers, vehicles, onClose, onSaved }) {
           <div className="space-y-1.5">
             <label className="text-xs text-slate-400">Driver</label>
             <select value={driverId} onChange={e => setDriverId(e.target.value)} required className="apex-input w-full">
-              <option value="">Select driver…</option>
+              <option value="">Select responder…</option>
               {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name || d.name}</option>)}
             </select>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs text-slate-400">Vehicle</label>
             <select value={vehicleId} onChange={e => setVehicleId(e.target.value)} className="apex-input w-full">
-              <option value="">Select vehicle…</option>
+              <option value="">Select support unit…</option>
               {vehicles.map(v => <option key={v.id} value={v.id}>{v.reg_number} — {v.make}</option>)}
             </select>
           </div>
@@ -669,7 +669,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
         <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-800/50 flex-shrink-0">
           <div>
             <h2 className="font-semibold text-white">New Dispatch Job</h2>
-            <p className="text-2xs text-slate-600 mt-0.5">Route planner · Vehicle-profile aware · Syncs to driver app</p>
+            <p className="text-2xs text-slate-600 mt-0.5">Route planner · Mission-aware · Syncs to Responder App</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg text-slate-500 hover:text-white hover:bg-slate-800 transition-colors">
             <Icon name="X" size={15} />
@@ -709,7 +709,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
               <label className="text-xs text-slate-400 font-medium">Pickup / Origin Address</label>
               <input className="apex-input w-full" value={form.pickup_address}
                 onChange={e => set('pickup_address', e.target.value)}
-                placeholder="Where driver starts loading" />
+                placeholder="Where responder starts the visit" />
             </div>
           </div>
 

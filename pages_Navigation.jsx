@@ -114,7 +114,7 @@ function FleetSidebar({ vehicles, activeId, onSelect, isLoading }) {
         <div className="max-h-64 overflow-y-auto scrollbar-none">
           {filtered.length === 0 && (
             <div className="px-3 py-5 text-xs text-slate-700 text-center">
-              {vehicles.length === 0 ? 'No vehicles in fleet' : 'No results'}
+              {vehicles.length === 0 ? 'No support units' : 'No results'}
             </div>
           )}
           {filtered.map(v => {
@@ -274,7 +274,7 @@ function CreateJobModal({ routeData, drivers, vehicles, onClose, onCreated }) {
               <label className="text-xs text-slate-400 font-medium">Assign Responder</label>
               <select value={driverId} onChange={e => setDriverId(e.target.value)}
                 className="w-full bg-slate-900/70 border border-slate-800/60 rounded-lg text-xs text-slate-300 px-3 py-2 outline-none focus:border-cyan-500/40">
-                <option value="">Select driver…</option>
+                <option value="">Select responder…</option>
                 {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name || d.name}</option>)}
               </select>
             </div>

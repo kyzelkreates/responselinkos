@@ -24,11 +24,11 @@ const MODULES = [
     color:    'text-cyan-400',
     bg:       'bg-cyan-500/10',
     border:   'border-cyan-500/20',
-    desc:     'General fleet intelligence assistant',
+    desc:     'General ResponseLink OS™ intelligence assistant',
     starters: [
-      'Summarise the current fleet status',
+      'Summarise the current mission and responder status',
       'What are the top safety concerns this week?',
-      'Suggest ways to reduce fuel costs',
+      'Suggest ways to improve welfare workflow efficiency',
     ],
   },
   {
@@ -39,10 +39,10 @@ const MODULES = [
     color:    'text-red-400',
     bg:       'bg-red-500/10',
     border:   'border-red-500/20',
-    desc:     'AI safety monitor — driver behaviour & risk',
+    desc:     'AI advisory monitor — responder welfare and risk',
     starters: [
       'Analyse recent safety alerts and identify patterns',
-      'Which drivers have the highest collision risk?',
+      'Which responders have the highest risk indicators this week?',
       'What proactive steps can reduce harsh braking incidents?',
     ],
   },
@@ -57,7 +57,7 @@ const MODULES = [
     desc:     'AI route optimisation & ETA engine',
     starters: [
       'Optimise a route from Manchester to London avoiding motorways',
-      'What time should a vehicle leave Birmingham to arrive by 09:00?',
+      'Summarise overdue welfare check-ins from today',
       'How can we reduce average journey time by 15%?',
     ],
   },
@@ -71,9 +71,9 @@ const MODULES = [
     border:   'border-emerald-500/20',
     desc:     'UK/EU regulatory compliance assistant',
     starters: [
-      'What are the UK driver hours rules for HGV drivers?',
+      'What are the recommended welfare visit escalation steps?',
       'When does a tachograph card need to be replaced?',
-      'List the documents an HGV driver must carry at all times',
+      'What information should a welfare incident report include?',
     ],
   },
   {
@@ -86,9 +86,9 @@ const MODULES = [
     border:   'border-amber-500/20',
     desc:     'Predictive analytics & maintenance forecasting',
     starters: [
-      'Forecast which vehicles are likely to need maintenance soon',
+      'Identify service users who have not had a check-in this week',
       'Predict fuel spend for next month based on current usage',
-      'Identify drivers at risk of hours violation this week',
+      'Identify responders with overdue mission completions',
     ],
   },
 ]

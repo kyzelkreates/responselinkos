@@ -146,9 +146,9 @@ function ComplianceAIPanel() {
   }, [])
 
   const STARTERS = [
-    'What are the current UK driver hours rules for HGV drivers?',
+    'What are the recommended welfare check-in frequency guidelines?',
     'Explain EU tachograph regulations and when breaks are required',
-    'What documents must an HGV driver carry at all times?',
+    'What records should a welfare visit report contain?',
     'When does a driver card need to be renewed and what is the process?',
     'What are the penalties for exceeding driving hours limits in the UK?',
     'Explain DVSA roadworthiness requirements for fleet vehicles',
@@ -170,7 +170,7 @@ function ComplianceAIPanel() {
           </div>
           <div>
             <span className="text-sm font-semibold text-white">Apex Compliance AI</span>
-            <p className="text-2xs text-slate-500">UK/EU regulatory guidance · DVSA · Tachograph · Driver hours</p>
+            <p className="text-2xs text-slate-500">Welfare & outreach compliance guidance · DVSA · Regulatory frameworks</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ function ComplianceAIPanel() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-            placeholder="Ask about driver hours, tachograph, DVSA, HGV regulations…"
+            placeholder="Ask about welfare visit guidelines, safeguarding procedures, compliance frameworks…"
             className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-emerald-500/40 focus:outline-none"
             disabled={streaming}
           />

@@ -165,7 +165,7 @@ export function DriverConnectionRow({ className = '' }) {
     <div className={`flex items-center justify-between p-2 rounded-lg bg-slate-900/40 border border-slate-800/60 ${className}`}>
       <div className="flex items-center gap-2">
         <Icon name="Database" size={12} className="text-slate-500" />
-        <span className="text-xs text-slate-500">Fleet Backend</span>
+        <span className="text-xs text-slate-500">ResponseLink Backend</span>
       </div>
       <div className={`flex items-center gap-1.5 ${cfg.color}`}>
         <span className={`inline-flex rounded-full h-1.5 w-1.5 ${cfg.dot}`} />

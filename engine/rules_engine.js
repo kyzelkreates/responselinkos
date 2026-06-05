@@ -59,9 +59,9 @@ export function validate(task, driver, vehicle = null, allActiveTasks = []) {
   const isBlocked    = DRIVER_UNAVAILABLE_STATUSES.has(driverStatus)
 
   if (isBlocked) {
-    failures.push(`Driver is ${driver.status || 'unavailable'} — not eligible for dispatch`)
+    failures.push(`Responder is ${driver.status || 'unavailable'} — not eligible for mission assignment`)
   } else if (!isOnline) {
-    failures.push(`Driver status '${driver.status}' is unknown — confirm availability`)
+    failures.push(`Responder status '${driver.status}' is unknown — confirm availability`)
   }
 
   // ── R2: Driver workload (max 1 active task in MVP) ──────────
@@ -81,7 +81,7 @@ export function validate(task, driver, vehicle = null, allActiveTasks = []) {
     failures.push('Task is missing a title')
   }
   if (!task.pickup_address && !task.origin) {
-    failures.push('Task has no pickup address — dispatcher must add one before dispatching')
+    failures.push('Task has no pickup address — coordinator must add one before assigning')
   }
 
   // ── R4: Task status must be pending ──────────────────────────
@@ -96,19 +96,19 @@ export function validate(task, driver, vehicle = null, allActiveTasks = []) {
     const vStatus = (vehicle.status || '').toLowerCase()
     if (VEHICLE_BLOCKED_STATUSES.has(vStatus)) {
       failures.push(
-        `Vehicle ${vehicle.reg_number || vehicle.id} is '${vehicle.status}' — not available for dispatch`
+        `Support unit ${vehicle.reg_number || vehicle.id} is '${vehicle.status}' — not available`
       )
     }
   }
 
   // ── W1: Urgent task + driver on break ────────────────────────
   if (task.priority === 'urgent' && driverStatus === 'on_break') {
-    warnings.push('Urgent task — driver is currently on break (confirm they can respond)')
+    warnings.push('Urgent task — responder is currently on break (confirm they can respond)')
   }
 
   // ── W2: High-priority + no GPS ──────────────────────────────
   if ((task.priority === 'high' || task.priority === 'urgent') && !driver.lat && !driver.lng) {
-    warnings.push('No GPS location recorded for driver — ETA estimate will be approximate')
+    warnings.push('No location recorded for responder — ETA estimate will be approximate')
   }
 
   // ── W3: No dropoff address ────────────────────────────────────
@@ -128,7 +128,7 @@ export function validate(task, driver, vehicle = null, allActiveTasks = []) {
     const hoursRunning =
       (Date.now() - new Date(driver.current_task_started_at).getTime()) / 3_600_000
     if (hoursRunning > 8) {
-      warnings.push(`Driver has been on their current task for ${hoursRunning.toFixed(1)}h`)
+      warnings.push(`Responder has been on their current task for ${hoursRunning.toFixed(1)}h`)
     }
   }
 

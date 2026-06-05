@@ -79,7 +79,7 @@ export default function Fleet() {
           </div>
           <button onClick={() => setModal('create')} className="btn-primary text-sm px-4 py-2">
             <Icon name="Plus" size={14} />
-            Add Vehicle
+            Add Support Unit
           </button>
         </div>
 
@@ -114,7 +114,7 @@ export default function Fleet() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search vehicles..."
+            placeholder="Search support units..."
             className="apex-input pl-8 py-2 text-xs"
           />
         </div>
@@ -175,7 +175,7 @@ export default function Fleet() {
             {filtered.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-600">
                 <Icon name="Truck" size={40} className="mb-4 opacity-20" />
-                <p className="text-sm">No vehicles match your filters</p>
+                <p className="text-sm">No support units match your filters</p>
               </div>
             )}
           </div>
