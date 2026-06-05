@@ -414,7 +414,7 @@ export default function AP3X() {
               {chatMsgs.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-32 gap-2 text-slate-700">
                   <Icon name="MessageSquare" size={24} className="opacity-20" />
-                  <span className="text-xs text-center">Send a message to fleet ops.<br/>Fleet can reply here in real time.</span>
+                  <span className="text-xs text-center">Send a message to command ops.<br/>Command can reply here in real time.</span>
                 </div>
               )}
               {chatMsgs.map((msg, i) => (
@@ -447,7 +447,7 @@ export default function AP3X() {
                 value={chatInput}
                 onChange={e => setChatInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendChat()}
-                placeholder="Message to fleet ops…"
+                placeholder="Message to command ops…"
                 className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-violet-500 focus:outline-none"
               />
               <button onClick={sendChat} disabled={!chatInput.trim()}

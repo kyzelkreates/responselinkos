@@ -70,7 +70,7 @@ function ApiKeysBadge() {
 
   if (keys.length === 0) return (
     <div className="mt-2 text-2xs text-amber-600 flex items-center gap-1">
-      <span>⚠</span> No API keys configured — driver app will use OSM/OSRM only
+      <span>⚠</span> No API keys configured — responder app will use OSM/OSRM only
     </div>
   )
   return (
@@ -268,7 +268,7 @@ export default function DriverSetup() {
   const generateCode = useCallback(() => {
     const driver   = drivers.find(d => d.id === codeGenDriver) || null
     const driverId = codeGenDriver || `guest-${Date.now()}`
-    const name     = driver?.full_name || 'Guest Driver'
+    const name     = driver?.full_name || 'Guest Responder'
     const reg      = driver?.vehicle_reg || driver?.license_plate || '—'
     const appURL   = `${window.location.origin}/#/driver-app`
     const code     = generateSyncCode(driverId, name, reg, 60)
@@ -346,7 +346,7 @@ export default function DriverSetup() {
 
   const TABS = [
     { key: 'setup',      icon: 'KeyRound',     label: 'Setup & Share' },
-    { key: 'paired',     icon: 'Link',         label: 'Paired Drivers', badge: pairedCodes.length || null },
+    { key: 'paired',     icon: 'Link',         label: 'Paired Responders', badge: pairedCodes.length || null },
     { key: 'telemetry',  icon: 'Gauge',        label: 'Live Telemetry', badge: Object.keys(latestByVehicle).length || null },
     { key: 'messages',   icon: 'MessageSquare',label: 'Messages',       badge: unreadMsgs || null },
     { key: 'ai_reports', icon: 'BrainCircuit', label: 'AI Reports',     badge: aiReports.length || null },
@@ -385,7 +385,7 @@ export default function DriverSetup() {
         <div className="text-xs text-slate-400 leading-relaxed">
           <strong className="text-amber-300">Security isolation active.</strong>{' '}
           Responders use the standalone <span className="text-violet-300 font-mono font-semibold">Responder App</span> —
-          a completely separate interface with no access to fleet management, vehicle data, or driver records.
+          a completely separate interface with no access to command dashboard data, vehicle data, or responder records.
           Pairing codes are one-time-use and expire in 60 minutes.{' '}
           <strong className="text-amber-300">Never share the command dashboard URL with responders.</strong>
         </div>
@@ -423,18 +423,18 @@ export default function DriverSetup() {
           <div className="space-y-5">
 
             {/* Step 1: Select driver */}
-            <Panel title="Step 1 — Select Driver" icon="Users">
+            <Panel title="Step 1 — Select Responder" icon="Users">
               <div className="space-y-3">
                 <div>
                   <label className="text-2xs text-slate-500 font-semibold uppercase tracking-wider block mb-1.5">
-                    Assign to Driver (optional)
+                    Assign to Responder (optional)
                   </label>
                   <select
                     value={codeGenDriver}
                     onChange={e => setCodeGenDriver(e.target.value)}
                     className="w-full bg-slate-800/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-sm text-white focus:border-violet-500/50 focus:outline-none"
                   >
-                    <option value="">— Walk-in / Guest driver —</option>
+                    <option value="">— Walk-in / Guest Responder —</option>
                     {drivers.map(d => (
                       <option key={d.id} value={d.id}>
                         {d.full_name}{d.vehicle_reg ? ` · ${d.vehicle_reg}` : ''}
@@ -442,7 +442,7 @@ export default function DriverSetup() {
                     ))}
                   </select>
                   <p className="text-2xs text-slate-700 mt-1.5">
-                    Assigning to a driver links their telemetry and AI reports to their profile automatically.
+                    Assigning to a responder links their telemetry and AI reports to their profile automatically.
                   </p>
                 </div>
                 <button
@@ -450,14 +450,14 @@ export default function DriverSetup() {
                   className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl bg-violet-500/15 border border-violet-500/30 text-violet-300 text-sm font-semibold hover:bg-violet-500/25 active:scale-[0.99] transition-all"
                 >
                   <Icon name="KeyRound" size={16} />
-                  Generate Driver Pairing Code
+                  Generate Responder Pairing Code
                 </button>
               </div>
             </Panel>
 
             {/* Step 2: Share code */}
             {pairingCode && (
-              <Panel title="Step 2 — Share With Driver" icon="Share2">
+              <Panel title="Step 2 — Share With Responder" icon="Share2">
                 <div className="space-y-4">
 
                   {/* The code itself */}
@@ -473,7 +473,7 @@ export default function DriverSetup() {
                         Valid 60 min · expires {codeExpiry.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     )}
-                    {pairingDriverName && pairingDriverName !== 'Guest Driver' && (
+                    {pairingDriverName && pairingDriverName !== 'Guest Responder' && (
                       <div className="mt-2 text-2xs text-slate-500">
                         Assigned to <span className="text-slate-300 font-medium">{pairingDriverName}</span>
                         {pairingDriverReg !== '—' && <> · {pairingDriverReg}</>}
@@ -554,7 +554,7 @@ export default function DriverSetup() {
                     {nfcStatus === 'scanning' && (
                       <div className="mt-3 flex items-center gap-2 text-xs text-amber-300 bg-amber-500/8 border border-amber-500/20 rounded-lg px-3 py-2">
                         <Icon name="Loader2" size={13} className="animate-spin" />
-                        Hold driver's phone to NFC sensor on this device…
+                        Hold responder's phone to NFC sensor on this device…
                       </div>
                     )}
                   </div>
@@ -629,9 +629,9 @@ export default function DriverSetup() {
             <Panel title="How Responder App Works" icon="Info">
               <div className="space-y-3">
                 {[
-                  { icon: 'Lock', color: 'text-emerald-400', title: 'Secure isolation', desc: 'Driver app is completely separate from fleet management — drivers see only navigation and their own data' },
+                  { icon: 'Lock', color: 'text-emerald-400', title: 'Secure isolation', desc: 'Responder app is completely separate from the command dashboard — responders see only navigation and their own data' },
                   { icon: 'Gauge', color: 'text-cyan-400', title: 'Live telemetry', desc: 'GPS, speed, heading, and AI safety scores stream to command dashboard in real time' },
-                  { icon: 'BrainCircuit', color: 'text-violet-400', title: 'AI Sentinel onboard', desc: 'Fatigue detection, harsh event monitoring, and driving performance AI run locally on the driver device' },
+                  { icon: 'BrainCircuit', color: 'text-violet-400', title: 'AI Sentinel onboard', desc: 'Fatigue detection, harsh event monitoring, and driving performance AI run locally on the responder device' },
                   { icon: 'MessageSquare', color: 'text-blue-400', title: 'Two-way messaging', desc: 'Command operators and responders can message each other directly through the paired channel' },
                   { icon: 'Navigation', color: 'text-amber-400', title: 'Smart navigation', desc: 'GraphHopper / Google Maps routing with AI-generated route guidance via Apex RouteMind' },
                 ].map(f => (
@@ -706,7 +706,7 @@ export default function DriverSetup() {
                       onClick={() => { setReplyTarget(code.driver_id); setTab('messages') }}
                       className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-2xs text-slate-400 hover:text-violet-300 bg-slate-800/40 hover:bg-violet-500/10 border border-slate-700/30 hover:border-violet-500/20 transition-all"
                     >
-                      <Icon name="MessageSquare" size={11} /> Message Driver
+                      <Icon name="MessageSquare" size={11} /> Message Responder
                     </button>
                   </div>
                 )
@@ -851,7 +851,7 @@ export default function DriverSetup() {
                   value={replyInput}
                   onChange={e => setReplyInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply() } }}
-                  placeholder="Message to driver…"
+                  placeholder="Message to responder…"
                   className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-600 focus:border-violet-500/40 focus:outline-none"
                 />
                 <button

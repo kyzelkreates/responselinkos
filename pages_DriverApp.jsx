@@ -526,7 +526,7 @@ function SetupScreen({ onReady }) {
     if (trimmed.toUpperCase().startsWith('APXS-')) {
       const res = activateSyncCode(trimmed, null)
       setChecking(false)
-      if (!res.ok) return setErr(res.error || 'Code invalid or expired. Get a fresh one from the fleet dashboard.')
+      if (!res.ok) return setErr(res.error || 'Code invalid or expired. Get a fresh one from the command dashboard.')
       const rec = res.record
       setPaired({ driverId: rec.driver_id, driverName: rec.driver_name, vehicleReg: rec.vehicle_reg, record: rec, injectedKeys: res.injectedKeys || [] })
       setName(rec.driver_name || '')
@@ -535,7 +535,7 @@ function SetupScreen({ onReady }) {
     }
 
     setChecking(false)
-    setErr('Invalid code. Make sure you copied the full code starting with APXS- from the fleet dashboard.')
+    setErr('Invalid code. Make sure you copied the full code starting with APXS- from the command dashboard.')
   }
 
   const submitProfile = () => {
@@ -572,7 +572,7 @@ function SetupScreen({ onReady }) {
               <Icon name="ShieldCheck" size={16} className="text-violet-400 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-slate-400 leading-relaxed">
                 Get your <span className="text-violet-300 font-semibold">fleet sync code</span> from the{' '}
-                <span className="text-violet-400 font-mono">Set Driver Up With App</span> section of the fleet dashboard.
+                <span className="text-violet-400 font-mono">Set Responder Up With App</span> section of the command dashboard.
                 Code format: <span className="font-mono text-violet-400">APEX-XXXXXXXX-XXXX-FC</span>.
                 Syncs jobs, maps &amp; AI access to this device.
               </div>
@@ -603,7 +603,7 @@ function SetupScreen({ onReady }) {
                     ? '✓ Valid code — tap Connect'
                     : !code.trim().toUpperCase().startsWith('APXS-') && code.length > 4
                     ? '✗ Code must start with APXS-'
-                    : 'Paste the full code from the fleet dashboard…'}
+                    : 'Paste the full code from the command dashboard…'}
                 </div>
               )}
             </div>
@@ -612,7 +612,7 @@ function SetupScreen({ onReady }) {
               disabled={!code.trim().toUpperCase().startsWith('APXS-') || code.trim().length < 20 || checking}
               className="w-full bg-violet-500 hover:bg-violet-600 active:bg-violet-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 text-sm transition-colors flex items-center justify-center gap-2">
               <Icon name="Link" size={15} />
-              {checking ? 'Connecting…' : 'Connect to Fleet'}
+              {checking ? 'Connecting…' : 'Connect to Command Dashboard'}
             </button>
           </div>
         ) : (
@@ -1062,10 +1062,10 @@ function DriverAppMain({ profile, onLogout }) {
   const submitFleetCode = useCallback(() => {
     setFleetLinkError('')
     const trimmed = fleetLinkCode.trim()
-    if (!trimmed) { setFleetLinkError('Paste your APXS sync code from the fleet dashboard'); return }
+    if (!trimmed) { setFleetLinkError('Paste your APXS sync code from the command dashboard'); return }
 
     if (!trimmed.toUpperCase().startsWith('APXS-')) {
-      setFleetLinkError('Invalid code — must start with APXS-. Copy the full code from the fleet dashboard.')
+      setFleetLinkError('Invalid code — must start with APXS-. Copy the full code from the command dashboard.')
       return
     }
 
@@ -1075,7 +1075,7 @@ function DriverAppMain({ profile, onLogout }) {
       vehicle_reg: profile.vehicle_reg,
     })
     if (!res.ok) {
-      setFleetLinkError(res.error || 'Code invalid or expired — ask fleet ops for a new one')
+      setFleetLinkError(res.error || 'Code invalid or expired — ask command ops for a new one')
       return
     }
     setFleetLinkSuccess(true)
@@ -1543,7 +1543,7 @@ function DriverAppMain({ profile, onLogout }) {
     setSentinelQ('')
     try {
       const ctx = [
-        `Driver: ${profile.full_name}`,
+        `Responder: ${profile.full_name}`,
         `Vehicle: ${profile.vehicle_reg}`,
         `Session time: ${fmtClock(sessionSecs)}`,
         `Fatigue score: ${fatigueScore}/100 (${alertLevel})`,
@@ -1552,7 +1552,7 @@ function DriverAppMain({ profile, onLogout }) {
         `Recent alerts: ${safetyAlerts.slice(0, 3).map(a => a.text).join('; ') || 'none'}`,
       ].join(', ')
 
-      const res   = await aiRouter.routeModule('apex_sentinel', `${question}\n\nDriver context: ${ctx}`)
+      const res   = await aiRouter.routeModule('apex_sentinel', `${question}\n\nResponder context: ${ctx}`)
       const reply = res?.content || (typeof res === 'string' ? res : 'No response from Sentinel')
       setSentinelLog(prev => [...prev, { role: 'assistant', module: 'sentinel', text: reply, ts: tsNow() }])
       // Push Sentinel report to fleet dashboard
@@ -1778,7 +1778,7 @@ function DriverAppMain({ profile, onLogout }) {
           onRejected={async () => {
             // Persist rejection to Supabase via rejectJob
             if (pendingConfirmJob?.id) {
-              try { await pwaJobSync.rejectJob(pendingConfirmJob.id, 'Driver rejected') } catch {}
+              try { await pwaJobSync.rejectJob(pendingConfirmJob.id, 'Responder declined') } catch {}
             }
             setPendingConfirmJob(null)
             setExecState(null)
@@ -1884,7 +1884,7 @@ function DriverAppMain({ profile, onLogout }) {
           return paired ? (
             <div className="flex items-center gap-1 px-2 py-1 rounded-lg border border-emerald-500/20 bg-emerald-500/6 text-2xs text-emerald-400">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Fleet Linked</span>
+              <span>Command Dashboard Linked</span>
             </div>
           ) : null
         })()}
@@ -2380,7 +2380,7 @@ function DriverAppMain({ profile, onLogout }) {
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-700">
                 <Icon name="MessageSquare" size={32} className="opacity-20" />
-                <div className="text-xs text-center">No messages yet.<br />Messages with fleet ops will appear here.</div>
+                <div className="text-xs text-center">No messages yet.<br />Messages with command ops will appear here.</div>
               </div>
             ) : messages.map((msg, i) => (
               <div key={msg.id || i} className={`flex ${msg.from === 'driver' ? 'justify-end' : 'justify-start'}`}>
@@ -2411,7 +2411,7 @@ function DriverAppMain({ profile, onLogout }) {
           <div className="flex gap-2 p-3 border-t border-slate-800/50 bg-[#0a1020] flex-shrink-0">
             <input value={chatInput} onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && sendChat()}
-              placeholder="Message to fleet ops…"
+              placeholder="Message to command ops…"
               className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-violet-500 focus:outline-none" />
             <button onClick={sendChat} disabled={!chatInput.trim()}
               className="w-11 h-11 flex items-center justify-center bg-violet-500/15 border border-violet-500/25 rounded-xl text-violet-400 hover:bg-violet-500/25 disabled:opacity-30 transition-colors">
@@ -2441,7 +2441,7 @@ function DriverAppMain({ profile, onLogout }) {
                   </div>
                 </div>
                 <button
-                  onClick={() => { if (window.confirm('Disconnect from fleet?')) { localStorage.removeItem('apex:sync_pairing'); setJobs([]) } }}
+                  onClick={() => { if (window.confirm('Disconnect from command dashboard?')) { localStorage.removeItem('apex:sync_pairing'); setJobs([]) } }}
                   className="text-2xs text-slate-700 hover:text-red-400 transition-colors"
                 >
                   <Icon name="Unlink" size={12} />
@@ -2472,7 +2472,7 @@ function DriverAppMain({ profile, onLogout }) {
                 <div>
                   <div className="text-xs font-semibold text-white">Enter Fleet Sync Code</div>
                   <div className="text-2xs text-slate-500 mt-0.5">
-                    Paste your <span className="font-mono text-violet-400">APEX-XXXXXXXX-XXXX-FC</span> code from the fleet dashboard.
+                    Paste your <span className="font-mono text-violet-400">APEX-XXXXXXXX-XXXX-FC</span> code from the command dashboard.
                     This syncs jobs, maps and AI provider access.
                   </div>
                 </div>
@@ -2487,7 +2487,7 @@ function DriverAppMain({ profile, onLogout }) {
                   const pasted = (e.clipboardData.getData('text') || '').trim()
                   setFleetLinkCode(pasted)
                 }}
-                placeholder="Paste APXS-… code from fleet dashboard"
+                placeholder="Paste APXS-… code from command dashboard"
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -2520,7 +2520,7 @@ function DriverAppMain({ profile, onLogout }) {
               {fleetLinkSuccess && (
                 <div className="text-xs text-emerald-400 bg-emerald-500/8 border border-emerald-500/20 rounded-lg px-3 py-2 space-y-1">
                   <div className="flex items-center gap-1.5 font-semibold">
-                    <Icon name="CheckCircle2" size={12} /> Connected to fleet!
+                    <Icon name="CheckCircle2" size={12} /> Connected to command dashboard!
                   </div>
                   <div className="text-2xs text-emerald-600">
                     Synced as <span className="text-emerald-400">{profile.full_name}</span> · {profile.vehicle_reg} ·
@@ -2533,11 +2533,11 @@ function DriverAppMain({ profile, onLogout }) {
                 onClick={submitFleetCode}
                 disabled={!fleetLinkCode.trim().toUpperCase().startsWith('APXS-') || fleetLinkCode.trim().length < 20}
                 className="w-full py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 active:bg-violet-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                <Icon name="Link" size={14} /> Connect to Fleet
+                <Icon name="Link" size={14} /> Connect to Command Dashboard
               </button>
 
               <div className="text-2xs text-slate-700 text-center">
-                Get this code from <span className="text-slate-600">Set Driver Up With App</span> in the fleet dashboard
+                Get this code from <span className="text-slate-600">Set Responder Up With App</span> in the command dashboard
               </div>
             </div>
           )}
