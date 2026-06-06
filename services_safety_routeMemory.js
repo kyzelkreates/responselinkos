@@ -4,7 +4,7 @@
  * Stores active route snapshots in IndexedDB, tracks deviations,
  * and syncs metadata-only to Supabase when online.
  *
- * DRIVER PWA ONLY — no Fleet OS coupling.
+ * RESPONDER PWA ONLY — no ResponseLink OS™ coupling.
  */
 
 import { saveRouteSnapshot, getRouteSnapshot } from './services_safety_offlineVault'

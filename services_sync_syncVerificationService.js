@@ -23,7 +23,7 @@
  * HARD RULES (immutable):
  *   ✅ READ ONLY — no writes, no inserts, no updates
  *   ✅ Uses existing Supabase client — no new connections
- *   ✅ Does NOT modify Federation OS, Driver PWA, or event schema
+ *   ✅ Does NOT modify Federation OS, Responder PWA, or event schema
  *   ✅ Gracefully degrades — all errors return safe fallback values
  *   ✅ Append-only contract maintained (no schema changes)
  *

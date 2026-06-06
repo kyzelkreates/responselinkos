@@ -3,7 +3,7 @@
  * IndexedDB-backed local store for safety events, route snapshots,
  * dashcam clip metadata, and AI detections.
  *
- * DRIVER PWA ONLY — no Fleet OS dependency.
+ * RESPONDER PWA ONLY — no ResponseLink OS™ dependency.
  */
 
 const DB_NAME    = 'ap3x_safety_vault'

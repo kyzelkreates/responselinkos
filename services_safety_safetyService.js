@@ -89,8 +89,8 @@ export const safetyService = {
 
     // ── Fatigue (rule-based) ─────────────────────────────────
     // Triggered when telemetry payload carries fatigue_score or session_hours.
-    // Fleet OS reads this — does NOT write source data; fatigue_score comes
-    // from the Driver PWA via Federation OS sync payload (syncPayload.js).
+    // ResponseLink OS™ reads this — does NOT write source data; fatigue_score comes
+    // from the Responder PWA via Federation OS sync payload (syncPayload.js).
     const fatigueScore  = telemetry.fatigue_score  ?? null
     const sessionHours  = telemetry.session_hours  ?? null
 

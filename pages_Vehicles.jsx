@@ -228,7 +228,7 @@ function VehicleBrowse({ vehicles, isLoading, onSelect }) {
             {filtered.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-16 text-slate-600">
                 <Icon name="Truck" size={36} className="mb-3 opacity-20" />
-                <p className="text-sm">No vehicles found</p>
+                <p className="text-sm">No support units found</p>
               </div>
             )}
           </div>

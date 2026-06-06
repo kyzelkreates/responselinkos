@@ -68,7 +68,7 @@ self.addEventListener('push', (event) => {
     tag:     payload.jobId   ? `job-${payload.jobId}` : 'apex-job',
     renotify: true,
     vibrate: [200, 100, 200, 100, 200],
-    data:    { jobId: payload.jobId, driverId: payload.driverId, url: '/driver-app' },
+    data:    { jobId: payload.jobId, driverId: payload.driverId, url: '/responder-app' },
     actions: [
       { action: 'accept', title: '✅ Accept' },
       { action: 'view',   title: '👁 View'   },
@@ -88,14 +88,14 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (allClients) => {
       // Find an open PWA window and focus it
-      const existing = allClients.find(c => c.url.includes('/driver-app') || c.url.includes('/#'))
+      const existing = allClients.find(c => c.url.includes('/responder-app') || c.url.includes('/#'))
       if (existing) {
         await existing.focus()
         existing.postMessage({ type: 'NOTIFICATION_ACTION', action, jobId })
         return
       }
       // Otherwise open the PWA
-      await clients.openWindow(url || '/driver-app')
+      await clients.openWindow(url || '/responder-app')
     })
   )
 })

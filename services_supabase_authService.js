@@ -33,7 +33,7 @@ export const USER_ROLES = {
 
 export const ROLE_LABELS = {
   super_admin:    'Super Admin',
-  fleet_admin:    'Fleet Admin',
+  fleet_admin:    'Admin',
   fleet_manager:  'Supervisor',
   dispatcher:     'Dispatcher',
   compliance:     'Compliance Officer',
@@ -119,7 +119,7 @@ export const authService = {
         email:    (adminEmail || adminUsername).trim().toLowerCase(),
         password: adminPassword,
         role:     USER_ROLES.FLEET_ADMIN,
-        fullName: 'Fleet Administrator',
+        fullName: 'Administrator',
       },
       {
         id:       'usr_driver_01',

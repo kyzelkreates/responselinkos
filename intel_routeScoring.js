@@ -494,7 +494,7 @@ export const routeScoring = {
     if (scores.fuel < 50)         warnings.push({ level: 'info',   msg: 'Higher than average fuel consumption expected' })
     if (scores.weather < 50)      warnings.push({ level: 'warn',   msg: 'Weather risk on this corridor' })
     if (scores.traffic < 50)      warnings.push({ level: 'info',   msg: 'Expected congestion delays' })
-    if (scores.driverCompat < 50) warnings.push({ level: 'info',   msg: 'Driver unfamiliar with this route' })
+    if (scores.driverCompat < 50) warnings.push({ level: 'info',   msg: 'Responder unfamiliar with this mission path' })
     if (scores.vehicleCompat < 60) warnings.push({ level: 'warn',  msg: 'Vehicle may not be suitable for this route' })
     if (context.predictedDurationS && context.scheduledDeadlineTs) {
       const slack = (context.scheduledDeadlineTs - Date.now()) / 1000 - (context.predictedDurationS || 0)

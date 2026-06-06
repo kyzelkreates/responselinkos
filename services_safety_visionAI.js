@@ -5,7 +5,7 @@
  * blocking the navigation thread. Uses frame sampling from the dashcam
  * video element — NO server dependency, NO cloud streaming.
  *
- * DRIVER PWA ONLY.
+ * RESPONDER PWA ONLY.
  *
  * ─── Detection capabilities ──────────────────────────────────
  * - Road obstacles / debris

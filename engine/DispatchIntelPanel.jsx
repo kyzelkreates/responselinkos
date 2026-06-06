@@ -3,7 +3,7 @@
  * AP3X FLEET INTELLIGENCE — Dispatch Intelligence Panel (UI)
  * engine/DispatchIntelPanel.jsx
  *
- * "AI DISPATCH ENGINE" panel — Fleet Control OS only.
+ * "AI DISPATCH ENGINE" panel — ResponseLink OS™ only.
  *
  * MODES:
  *   Suggestion mode: shows top-3 ranked drivers with scores + ETA.
@@ -13,7 +13,7 @@
  *   - Engine never auto-assigns.
  *   - Dispatcher can override any suggestion.
  *   - Override is logged to dashboard_events.
- *   - This panel NEVER renders in Driver PWA context.
+ *   - This panel NEVER renders in Responder PWA context.
  *
  * USAGE:
  *   <DispatchIntelPanel
@@ -161,7 +161,7 @@ function CandidateCard({ candidate, selected, onSelect, rank }) {
 
           {/* ETA details */}
           <div>
-            <div className="text-2xs text-slate-600 uppercase tracking-wider mb-1">Route to pickup</div>
+            <div className="text-2xs text-slate-600 uppercase tracking-wider mb-1">Path to pickup</div>
             {route?.error ? (
               <p className="text-2xs text-amber-400">{route.error}</p>
             ) : (
@@ -274,13 +274,13 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
 
       if (isOverride) {
         await dispatchOrchestrator.logOverride(
-          task.id, suggestedIds, finalDriverId, overrideReason || 'Manual dispatcher override'
+          task.id, suggestedIds, finalDriverId, overrideReason || 'Manual coordinator override'
         )
       }
 
       const dispResult = await dispatchOrchestrator.confirmDispatch(
         task.id, finalDriverId, vehicleId || null,
-        isOverride ? (overrideReason || 'Manual dispatcher override') : null
+        isOverride ? (overrideReason || 'Manual coordinator override') : null
       )
 
       if (!dispResult.ok) {
@@ -359,7 +359,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
             </div>
             <div className="text-xs text-slate-400 text-center">
               <div className="font-medium text-slate-300">Running Mission Intelligence Engine</div>
-              <div className="text-slate-600 mt-1">Scoring responders · Calculating routes via GraphHopper</div>
+              <div className="text-slate-600 mt-1">Scoring responders · Calculating mission paths via GraphHopper</div>
             </div>
           </div>
         )}
@@ -415,7 +415,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
                 <Icon name="UserX" size={24} className="text-slate-700" />
                 <div className="text-sm text-slate-400 font-medium">No eligible responders</div>
                 <div className="text-xs text-slate-600 max-w-xs">
-                  All available drivers are either offline, already on a task, or fail safety checks.
+                  All available responders are either offline, already on a task, or fail safety checks.
                   Use the override below to manually assign.
                 </div>
               </div>
@@ -436,9 +436,9 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
                     onSelect={c2 => { setSelectedId(c2.driver_id); setOverrideMode(false) }}
                   />
                 ))}
-                {result.skipped_drivers > 0 && (
+                {result.skipped_responders > 0 && (
                   <div className="text-2xs text-slate-700 text-center">
-                    +{result.skipped_drivers} more eligible responder{result.skipped_drivers > 1 ? 's' : ''} not shown
+                    +{result.skipped_responders} more eligible responder{result.skipped_responders > 1 ? 's' : ''} not shown
                   </div>
                 )}
               </div>
@@ -501,7 +501,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
                       type="text"
                       value={overrideReason}
                       onChange={e => setOverrideReason(e.target.value)}
-                      placeholder="e.g. Driver knows the area"
+                      placeholder="e.g. Responder knows the area"
                       className="apex-input w-full text-xs"
                     />
                   </div>
@@ -555,7 +555,7 @@ export default function DispatchIntelPanel({ task, drivers = [], vehicles = [], 
             </div>
           ) : (
             <div className="text-center text-xs text-slate-600 py-1">
-              Select a driver above to enable dispatch
+              Select a responder above to enable assignment
             </div>
           )}
         </div>

@@ -2,7 +2,7 @@
  * ============================================================
  * ResponseLink OS™ — Responder App (Legacy Shell) (Live — No Mock Data)
  * Pulls real jobs from localStorage dispatch store.
- * Pushes live telemetry back to fleet dashboard via
+ * Pushes live telemetry back to Command Dashboard via
  * BroadcastChannel (same device) + localStorage.
  * ============================================================
  */
@@ -133,7 +133,7 @@ function NoJobs({ onImport }) {
       </div>
       <div className="text-center">
         <p className="text-slate-400 text-sm font-medium">No jobs assigned</p>
-        <p className="text-slate-600 text-xs mt-1">Ask fleet to send your assignment via the sync options.</p>
+        <p className="text-slate-600 text-xs mt-1">Ask your coordinator to send your assignment via the sync options.</p>
       </div>
 
       {/* Manual import */}
@@ -184,7 +184,7 @@ function JobList({ jobs, onSelect, activeId }) {
   )
 }
 
-// ─── AP3X Driver Page ─────────────────────────────────────────
+// ─── AP3X Responder App Page ──────────────────────────────────
 export default function AP3X() {
   const user        = useAuthStore(s => s.user)
   const driverId    = user?.id || 'local-driver'
@@ -267,7 +267,7 @@ export default function AP3X() {
   // ── Driver Chat: listen for fleet/AI replies ──────────────
   useEffect(() => {
     const unsub = listenForDriverMessages((msg) => {
-      if (msg.from === 'fleet' || msg.from === 'ai') {
+      if (msg.from === 'coordinator' || msg.from === 'ai') {
         setChatMsgs(prev => [...prev, msg])
         setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
       }
@@ -418,15 +418,15 @@ export default function AP3X() {
                 </div>
               )}
               {chatMsgs.map((msg, i) => (
-                <div key={msg.id || i} className={`flex ${msg.from === 'driver' ? 'justify-end' : 'justify-start'}`}>
+                <div key={msg.id || i} className={`flex ${msg.from === 'responder' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed ${
-                    msg.from === 'driver'
+                    msg.from === 'responder'
                       ? 'bg-violet-500/15 border border-violet-500/25 text-violet-100 rounded-br-sm'
                       : msg.from === 'ai'
                       ? 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-100 rounded-bl-sm'
                       : 'bg-slate-800/60 border border-slate-700/60 text-slate-200 rounded-bl-sm'
                   }`}>
-                    {(msg.from === 'fleet' || msg.from === 'ai') && (
+                    {(msg.from === 'coordinator' || msg.from === 'ai') && (
                       <div className="text-2xs text-slate-500 mb-1 flex items-center gap-1">
                         <Icon name={msg.from === 'ai' ? 'Cpu' : 'Radio'} size={9} />
                         {msg.from === 'ai' ? '4P3X AI' : 'Command'}
@@ -462,7 +462,7 @@ export default function AP3X() {
       <div className="px-4 py-2 border-t border-slate-800/60 flex items-center gap-3 flex-shrink-0">
         <StatusDot status={gpsActive ? 'online' : 'idle'} />
         <span className="text-2xs text-slate-600">
-          {gpsActive ? 'Live GPS · sending telemetry to fleet' : 'GPS offline'}
+          {gpsActive ? 'Live GPS · sending telemetry to ResponseLink OS™' : 'GPS offline'}
         </span>
         {telemetry.lat && (
           <span className="ml-auto text-2xs text-slate-700 font-mono">

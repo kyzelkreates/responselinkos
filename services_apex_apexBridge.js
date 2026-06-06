@@ -13,7 +13,7 @@
  *    • Subscribes to DB_KEYS.JOBS → fires routeComplete on completion
  *    • Subscribes to DB_KEYS.TELEMETRY → buffers vehicle_status events
  *
- *  Driver App:
+ *  Responder App:
  *    • driver_login event on profile load
  *    • route_started event on navigateToJob
  *    • route_complete event on completeJob (passed as callback)
@@ -108,7 +108,7 @@ export function mountDashboardBridge() {
   }
 }
 
-// ─── Driver App bridge ────────────────────────────────────────
+// ─── Responder App bridge ────────────────────────────────────────
 // Call this once after driver logs in.
 // Returns { onGpsTick, onJobStart, onJobComplete, onLogout }
 export function mountDriverBridge(profile) {

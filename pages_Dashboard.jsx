@@ -131,7 +131,7 @@ function VehicleRow({ vehicle, onClick }) {
   )
 }
 
-// ─── Driver Row ───────────────────────────────────────────────
+// ─── Responder Row ─────────────────────────────────────────────
 function DriverRow({ driver, onClick }) {
   const dot   = driver.status === DRIVER_STATUS.ACTIVE ? 'online' : driver.status === DRIVER_STATUS.ON_BREAK ? 'idle' : 'offline'
   const score = driver.safety_score ?? 0
@@ -208,8 +208,8 @@ function EmptyFleet({ navigate }) {
         <Icon name="Truck" size={24} className="text-cyan-500/40" />
       </div>
       <div className="text-center">
-        <div className="text-sm font-semibold text-white mb-1">No fleet data yet</div>
-        <div className="text-2xs text-slate-600 max-w-[200px] mx-auto">Add your vehicles and drivers to start tracking your fleet in real time</div>
+        <div className="text-sm font-semibold text-white mb-1">No data yet</div>
+        <div className="text-2xs text-slate-600 max-w-[200px] mx-auto">Add your support units and responders to start tracking operations</div>
       </div>
       <div className="flex gap-2">
         <button onClick={() => navigate(ROUTES.FLEET)}
@@ -257,7 +257,7 @@ function SystemBar({ vehicles, alerts, loading }) {
   )
 }
 
-// ─── Driver App Panel ─────────────────────────────────────────
+// ─── Responder App Panel ──────────────────────────────────────
 function DriverOnlineDot({ online }) {
   return (
     <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${
@@ -338,7 +338,7 @@ function SyncCodeCard({ code, expiry, qr, driverName, vehicleReg, onRevoke, onCo
   )
 }
 
-// ─── Active driver row ────────────────────────────────────────
+// ─── Active responder row ──────────────────────────────────────
 function ActiveDriverRow({ driver, onMessage, onAlert }) {
   const tel = driver.telemetry
   const age = driver.last_seen
@@ -435,7 +435,7 @@ function AIReportCard({ report }) {
   )
 }
 
-// ─── Main Driver Sync Section ─────────────────────────────────
+// ─── Main Responder Sync Section ───────────────────────────────
 function DriverSyncSection({ drivers = [], vehicles = [] }) {
   const [tab, setTab]                     = useState('sync')    // 'sync' | 'live' | 'commands' | 'ai'
   const [syncCode, setSyncCode]           = useState('')
@@ -565,7 +565,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
             <Icon name="Wifi" size={15} className="text-violet-400" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white font-display">Driver Sync</h2>
+            <h2 className="text-sm font-bold text-white font-display">Responder Sync</h2>
             <p className="text-2xs text-slate-500">Command ↔ Responder App live bridge</p>
           </div>
         </div>
@@ -740,7 +740,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
             <div className="bg-slate-800/20 border border-slate-700/30 rounded-lg p-3 space-y-2">
               <p className="text-2xs font-semibold text-slate-400 uppercase tracking-wider">How Sync Works</p>
               {[
-                ['1', 'Generate a sync code above and share it with the driver'],
+                ['1', 'Generate a sync code above and share it with the responder'],
                 ['2', 'Responder opens the Responder App → taps "Enter Sync Code"'],
                 ['3', 'Responder app pairs instantly — location streams to live map'],
                 ['4', 'AI agents (Sentinel + RouteMind) send reports back here'],
@@ -759,7 +759,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
         {tab === 'live' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-400">Real-time driver positions from paired apps</p>
+              <p className="text-xs text-slate-400">Real-time responder positions from paired apps</p>
               <span className="text-2xs text-slate-600">Updates every 5s</span>
             </div>
 
@@ -821,7 +821,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                 ))}
 
                 <p className="text-2xs text-slate-600 text-center pt-1">
-                  Live positions also visible on the <button onClick={() => {}} className="text-cyan-400 hover:underline">Fleet Map</button> — go to Navigation
+                  Live positions also visible on the <button onClick={() => {}} className="text-cyan-400 hover:underline">Live Map</button> — go to Navigation
                 </p>
               </>
             )}
@@ -1002,7 +1002,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
 
 
 
-// ─── Driver App Summary Card (Dashboard widget) ───────────────
+// ─── Responder App Summary Card (Dashboard widget) ─────────────
 function DriverAppSummaryCard({ drivers }) {
   const [telemetryCount, setTelemetryCount] = useState(0)
   const [msgCount,       setMsgCount]       = useState(0)
@@ -1440,7 +1440,7 @@ export default function Dashboard() {
             <div className="bg-[#0d1426] border border-slate-800/60 rounded-xl p-3 flex flex-col gap-1">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Icon name="ShieldCheck" size={11} className="text-emerald-400" />
-                <span className="text-2xs text-slate-500 font-medium">Fleet Safety</span>
+                <span className="text-2xs text-slate-500 font-medium">Mission Safety</span>
               </div>
               <div className={`text-xl font-bold font-mono ${intelKPIs.safetyKPIs.fleetSafetyScore >= 80 ? 'text-emerald-400' : intelKPIs.safetyKPIs.fleetSafetyScore >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
                 {intelKPIs.safetyKPIs.fleetSafetyScore}<span className="text-xs text-slate-600 font-normal">/100</span>
@@ -1520,7 +1520,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
             {/* Left: vehicles + drivers */}
             <div className="flex flex-col gap-5">
-              <Section title="Active Fleet" icon="Truck" className="flex-1 min-h-[220px]"
+              <Section title="Active Support Units" icon="Truck" className="flex-1 min-h-[220px]"
                 action={
                   <button onClick={() => navigate(ROUTES.FLEET)}
                     className="text-2xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
@@ -1533,7 +1533,7 @@ export default function Dashboard() {
                 {vehicles.filter(v => v.status === 'active').length === 0 && (
                   <div className="flex flex-col items-center py-6 text-slate-700 gap-1.5">
                     <Icon name="Truck" size={24} className="opacity-20" />
-                    <span className="text-xs">No active support units — set status to Active in Fleet</span>
+                    <span className="text-xs">No active support units — set status to Active</span>
                   </div>
                 )}
               </Section>

@@ -148,7 +148,7 @@ function NewChannelModal({ onClose, onCreated }) {
           <div className="space-y-1.5">
             <label className="text-xs text-slate-400 font-medium">Channel Name</label>
             <input value={name} onChange={e => setName(e.target.value)} autoFocus required
-              placeholder="e.g. Night Shift, Depot 2…"
+              placeholder="e.g. Night Shift, Hub 2…"
               className="apex-input" />
           </div>
           <div className="flex justify-end gap-2">

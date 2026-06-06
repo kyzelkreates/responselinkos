@@ -11,7 +11,7 @@
  *  - Late deliveries (before dispatch)
  *  - Future congestion windows
  *  - Route failure risk
- *  - Depot overload risk
+ *  - Hub overload risk
  *  - High-risk schedules
  *  - Weather disruption probability
  *  - Driver fatigue risk at arrival
@@ -166,7 +166,7 @@ export const predictionEngine = {
   },
 
   /**
-   * Predict depot overload at a given time.
+   * Predict hub overload at a given time.
    */
   predictDepotOverload(depotId = 'main', ts = Date.now()) {
     const forecast = fleetLearning.getDepotCongestionForecast(depotId, ts)

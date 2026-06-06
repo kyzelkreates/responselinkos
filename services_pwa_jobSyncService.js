@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * AP3X — PWA Job Sync Service  (Driver PWA — Supabase Realtime)
+ * AP3X — PWA Job Sync Service  (Responder PWA — Supabase Realtime)
  * services/pwa/jobSyncService.js
  *
  * CONTRACT (LOCKED):

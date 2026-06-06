@@ -108,7 +108,7 @@ export default function DriverLogin() {
 
           <div className="mt-4 pt-4 border-t border-slate-800/50 text-center">
             <a href="#/auth/login" className="text-xs text-slate-600 hover:text-slate-400 transition-colors">
-              ← Fleet admin login
+              ← Admin login
             </a>
           </div>
         </div>

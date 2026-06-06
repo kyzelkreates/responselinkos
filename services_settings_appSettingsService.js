@@ -5,7 +5,7 @@
  *
  * Persists fleet-wide settings (e.g. API keys, routing config)
  * to the Supabase `settings` table so ALL devices share them —
- * Fleet Control OS AND Driver PWA.
+ * ResponseLink OS™ AND Responder PWA.
  *
  * Keys stored:
  *   graphhopper_api_key   — routing engine key
@@ -62,7 +62,7 @@ export async function saveGraphHopperKey(apiKey) {
   const trimmed = (apiKey || '').trim()
   // Always save locally for immediate effect
   setRuntimeKey(RUNTIME_KEYS.GRAPHHOPPER, trimmed)
-  // Also push to Supabase so Driver PWA gets it
+  // Also push to Supabase so Responder PWA gets it
   const ok = await writeSetting(SETTING_KEYS.GH_API_KEY, { key: trimmed })
   return ok
 }

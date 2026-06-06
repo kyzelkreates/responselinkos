@@ -1,9 +1,9 @@
 /**
  * ============================================================
  * APEX AI — Tenant Registry
- * Multi-tenant isolation layer for the Fleet Control OS.
+ * Multi-tenant isolation layer for ResponseLink OS™.
  *
- * Each Fleet Control OS installation operates as an isolated
+ * Each ResponseLink OS™ installation operates as an isolated
  * company entity (tenant). All data stored under tenant-scoped
  * keys — NO cross-tenant leakage possible.
  *

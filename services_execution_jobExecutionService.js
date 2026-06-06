@@ -37,7 +37,7 @@ function sb() {
 
 /**
  * Create or return existing execution state for a job.
- * Called when Driver PWA receives a new job (JOB_RECEIVED).
+ * Called when Responder PWA receives a new mission (JOB_RECEIVED).
  * Status starts as 'pending' — driver hasn't confirmed yet.
  */
 export async function initJobExecution(jobId, driverId, tenantId = null) {
@@ -496,7 +496,7 @@ export async function resolveInterruption(interruptionId, resolution, approvedBy
 
 
 // ═══════════════════════════════════════════════════════════════
-// SECTION E — COMPOSITE HELPERS (used by Driver PWA screens)
+// SECTION E — COMPOSITE HELPERS (used by Responder PWA screens)
 // ═══════════════════════════════════════════════════════════════
 
 /**

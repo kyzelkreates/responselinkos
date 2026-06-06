@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * APEX AI — Live Sync Service
- * Real-time bidirectional bridge between Driver App and Fleet OS
+ * Real-time bidirectional bridge between Responder PWA and ResponseLink OS™
  *
  * LOCATION:  Driver → Fleet (GPS every 5s)
  * COMMANDS:  Fleet → Driver (dispatch, alerts, messages)
@@ -511,7 +511,7 @@ export function clearDriverSyncPairing() {
 
 // ─── QR & SHARE UTILITIES ─────────────────────────────────────
 export function getSyncCodeQR(code, size = 240) {
-  const deepLink = `${window.location.origin}${window.location.pathname}#/driver-app?sync=${encodeURIComponent(code)}`
+  const deepLink = `${window.location.origin}${window.location.pathname}#/responder-app?sync=${encodeURIComponent(code)}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(deepLink)}&bgcolor=060b18&color=a78bfa&margin=3`
   return { qrUrl, deepLink, code }
 }
@@ -532,13 +532,13 @@ export async function copySyncCode(code) {
 }
 
 export function shareSyncCodeWhatsApp(code, driverName, vehicleReg) {
-  const url = `${window.location.origin}${window.location.pathname}#/driver-app?sync=${encodeURIComponent(code)}`
+  const url = `${window.location.origin}${window.location.pathname}#/responder-app?sync=${encodeURIComponent(code)}`
   const msg = `*ResponseLink OS™ — Responder Sync*\n\n👤 Responder: ${driverName}\n📋 Reference: ${vehicleReg}\n\n*Sync Code:*\n\`${code}\`\n\n📱 Open the Responder App and paste this code to connect, or tap:\n${url}\n\n_Code expires in 1 hour._`
   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer')
 }
 
 export function shareSyncCodeEmail(code, driverName, vehicleReg, email = '') {
-  const url = `${window.location.origin}${window.location.pathname}#/driver-app?sync=${encodeURIComponent(code)}`
+  const url = `${window.location.origin}${window.location.pathname}#/responder-app?sync=${encodeURIComponent(code)}`
   const subj = encodeURIComponent(`[Apex AI] Sync Code — ${driverName} / ${vehicleReg}`)
   const body = encodeURIComponent(
     `Hi ${driverName},\n\nYour Apex AI Fleet Control sync code is ready.\n\n` +
@@ -553,10 +553,10 @@ export function shareSyncCodeEmail(code, driverName, vehicleReg, email = '') {
 }
 
 export async function shareSyncCodeNative(code, driverName, vehicleReg) {
-  const url = `${window.location.origin}${window.location.pathname}#/driver-app?sync=${encodeURIComponent(code)}`
+  const url = `${window.location.origin}${window.location.pathname}#/responder-app?sync=${encodeURIComponent(code)}`
   if (!navigator.share) return { ok: false, error: 'Web Share not supported' }
   try {
-    await navigator.share({ title: 'Apex AI — Driver Sync', text: `Sync code: ${code} | Driver: ${driverName}`, url })
+    await navigator.share({ title: 'ResponseLink OS™ — Responder Sync', text: `Sync code: ${code} | Responder: ${driverName}`, url })
     return { ok: true }
   } catch (e) {
     return { ok: false, error: e.name === 'AbortError' ? 'Cancelled' : e.message }

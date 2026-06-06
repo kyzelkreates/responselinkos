@@ -123,7 +123,7 @@ export default function Login() {
           <div className="mt-4 pt-4 border-t border-slate-800/50 flex items-center justify-between">
             <a href="#/auth/driver"
               className="text-xs text-violet-400/70 hover:text-violet-400 transition-colors flex items-center gap-1">
-              <Icon name="Navigation" size={11} /> Driver Login
+              <Icon name="Navigation" size={11} /> Responder Login
             </a>
             <span className="text-xs text-slate-700">Local auth • No internet required</span>
           </div>

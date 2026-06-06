@@ -1,10 +1,10 @@
 /**
  * ============================================================
- * AP3X DRIVER PWA — Safe Event Emission Layer
+ * AP3X RESPONDER PWA — Safe Event Emission Layer
  * File: services_drivers_pwaEventBus.js
  *
  * PURPOSE (ADD-ON ONLY):
- *   Wraps all Driver PWA → AP3X event system calls with:
+ *   Wraps all Responder PWA → AP3X event system calls with:
  *     1. Structural validation  (non-blocking — logs & corrects)
  *     2. Guaranteed event format enforcement
  *     3. Offline queue (localStorage) with auto-flush on reconnect
@@ -16,9 +16,9 @@
  *   It ONLY: capture → validate → wrap → emit (or queue if offline).
  *
  * SYSTEM CONTRACT (IMMUTABLE):
- *   Driver PWA → eventBus → Federation OS → Supabase → Fleet OS → Dashboards
+ *   Responder PWA → eventBus → Federation OS → Supabase → ResponseLink OS™ → Dashboards
  *   This module emits to eventBus only. It does NOT touch Federation OS,
- *   Fleet OS, Supabase, or any intelligence layer.
+ *   ResponseLink OS™, Supabase, or any intelligence layer.
  *
  * EVENT FORMAT (LOCKED — DO NOT MODIFY):
  *   {
@@ -50,7 +50,7 @@ const SB_RETRY_BASE_DELAY = 400   // ms — doubles per retry (400, 800, 1600)
 const SB_OFFLINE_KEY      = 'apex:pwa:sb_event_queue'
 const SB_MAX_QUEUE        = 150
 
-// Valid event types the Driver PWA is allowed to emit (sensor-node contract)
+// Valid event types the Responder PWA is allowed to emit (sensor-node contract)
 const ALLOWED_EVENT_TYPES = new Set([
   'DRIVER_LOCATION',
   'DRIVER_TELEMETRY',
@@ -403,17 +403,17 @@ if (typeof window !== 'undefined') {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SUPABASE EMIT PATH — Driver PWA → Supabase dashboard_events
+// SUPABASE EMIT PATH — Responder PWA → Supabase dashboard_events
 // ═══════════════════════════════════════════════════════════════
 // This is the REALTIME-COMPATIBLE emit path.
 // Inserts a validated event row into dashboard_events so Supabase
-// Realtime can propagate it to Fleet OS subscribers.
+// Realtime can propagate it to ResponseLink OS™ subscribers.
 //
 // Schema used (existing, append-only):
 //   dashboard_events: { id (uuid, auto), type, payload (jsonb), created_at (auto) }
 //
 // CONTRACT:
-//   - Driver PWA is the INSERT source only — no reads, no updates, no deletes
+//   - Responder PWA is the INSERT source only — no reads, no updates, no deletes
 //   - Event format: { type, source: "driver_pwa", timestamp, payload }
 //     stored as: type = event.type, payload = full event object
 //   - Falls back to offline queue if Supabase unavailable
@@ -530,7 +530,7 @@ export function getSupabaseQueueDepth() {
  * If offline or all retries fail → queues to localStorage for later flush.
  *
  * This is the realtime-compatible path:
- *   Driver PWA → dashboard_events INSERT → Supabase Realtime → Fleet OS
+ *   Responder PWA → dashboard_events INSERT → Supabase Realtime → ResponseLink OS™
  *
  * @param {object} rawEvent - { type, payload, [timestamp] }
  * @param {object} [options] - { skipQueue: boolean }
@@ -589,7 +589,7 @@ export const pwaEventBus = {
   emitBreakStart,
   emitBreakEnd,
   emitHazardReport,
-  // Supabase path (cross-device realtime → Fleet OS)
+  // Supabase path (cross-device realtime → ResponseLink OS™)
   supabaseEmit,
   flushSupabaseQueue,
   getSupabaseQueueDepth,

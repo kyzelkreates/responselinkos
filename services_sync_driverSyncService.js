@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * APEX AI — Driver Sync Service
+ * ResponseLink OS™ — Responder Sync Service
  * Handles all Fleet ↔ Driver app communication methods:
  *
  *  1. QR Code          — encode sync package as QR, driver scans
@@ -58,7 +58,7 @@ export function sendViaEmail(driverId, driverEmail) {
   const subj  = encodeURIComponent(`[Apex AI] ${jobs} job${jobs !== 1 ? 's' : ''} assigned to you`)
   const body  = encodeURIComponent(
     `Hi ${pkg.driver_name},\n\n` +
-    `You have ${jobs} job${jobs !== 1 ? 's' : ''} assigned in Apex Fleet Control.\n\n` +
+    `You have ${jobs} mission${jobs !== 1 ? 's' : ''} assigned in ResponseLink OS™.\n\n` +
     `Open on your device:\n${link}\n\n` +
     `Or paste this sync code into the Responder App > Import Missions:\n\n${pkgStr(pkg)}\n\n` +
     `— ResponseLink OS™`
@@ -327,7 +327,7 @@ const CODE_KEY    = 'apex:fleet:pairing_codes'   // fleet side
 const PAIRED_KEY  = 'apex:driver:fleet_paired'   // driver side
 
 /** Fleet: generate an APEX-XXXXXXXX-XXXX-DA time-limited pairing code for a driver.
- *  Format: APEX-{8 HEX}-{4 HEX}-DA  (DA = Driver App)
+ *  Format: APEX-{8 HEX}-{4 HEX}-RA  (RA = Responder App)
  *  Passes regex: /^APEX-[A-F0-9]{8}-[A-F0-9]{4}-[A-Z]{2,4}$/
  */
 export function generatePairingCode(driverId, driverName, vehicleReg, validMinutes = 60) {
@@ -485,7 +485,7 @@ export function getDriverAIReportHistory(limit = 100) {
  * Contains only the code + driver app URL — never fleet dashboard.
  */
 function buildCodePayload(code, driverName, vehicleReg) {
-  const driverAppURL = `${window.location.origin}/#/driver-app`
+  const driverAppURL = `${window.location.origin}/#/responder-app`
   return {
     code,
     driverAppURL,
@@ -546,7 +546,7 @@ export async function sendViaNFC(code, driverName, onStatus) {
         },
         {
           recordType: 'url',
-          data: `${window.location.origin}/#/driver-app?code=${encodeURIComponent(code)}`,
+          data: `${window.location.origin}/#/responder-app?code=${encodeURIComponent(code)}`,
         },
       ],
     })
@@ -567,7 +567,7 @@ export async function sendViaNFC(code, driverName, onStatus) {
  */
 export function getPairingCodeQR(code, size = 240) {
   // Deep link: opens driver app and pre-fills the code
-  const deepLink = `${window.location.origin}/#/driver-app?code=${encodeURIComponent(code)}`
+  const deepLink = `${window.location.origin}/#/responder-app?code=${encodeURIComponent(code)}`
   const encoded  = encodeURIComponent(deepLink)
   return {
     url:      `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&bgcolor=060b18&color=a78bfa&margin=4`,

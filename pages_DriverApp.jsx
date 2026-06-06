@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * ResponseLink OS™ — Responder PWA  (Full Enterprise Build)
- * Route: /driver-app  (no auth guard — driver-side standalone)
+ * Route: /driver-app  (no auth guard — responder-side standalone, legacy path)
  *
  * Features:
  *  ✅ OSM / OSRM navigation — live route, polyline, step-by-step turn guidance
@@ -724,17 +724,17 @@ function DriverAppMain({ profile, onLogout }) {
   useEffect(() => {
     // Load GH key from Supabase fleet settings
     loadGraphHopperKey().catch(() => {})
-    // Reconcile federation state — Driver PWA inherits from Supabase fleet_nodes
+    // Reconcile federation state — Responder PWA inherits from Supabase fleet_nodes
     reconcileFederationState().catch(() => {})
   }, [])
 
   // ── Federation realtime inheritance ───────────────────────────
-  // Driver PWA inherits federation state automatically.
+  // Responder PWA inherits federation state automatically.
   // No active action needed — just keeps local cache in sync.
   useEffect(() => {
     const unsub = subscribeFederationRealtime(() => {
       // State change handled internally by pairingEngine cache
-      // Driver PWA does not act on federation status changes directly
+      // Responder PWA does not act on federation status changes directly
     })
     return unsub
   }, [])

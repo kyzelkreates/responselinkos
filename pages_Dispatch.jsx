@@ -1,9 +1,9 @@
 /**
  * ============================================================
- * ResponseLink OS™ — Mission Control Center (Local DB + Driver Sync)
- * Create jobs, assign drivers, send to driver app via:
+ * ResponseLink OS™ — Mission Control Center (Local DB + Responder Sync)
+ * Coordinate missions, assign responders, send to Responder PWA via:
  *   Bluetooth · Email · Web Share (WiFi Direct/AirDrop) · QR · Link
- * Listens for live telemetry coming back from driver.
+ * Listens for live telemetry coming back from responder.
  * ============================================================
  */
 
@@ -29,7 +29,7 @@ import { dispatchOrchestrator } from './engine/dispatch_orchestrator'
 
 const PRIORITY_ICONS = { low: 'ArrowDown', normal: 'Minus', high: 'ArrowUp', urgent: 'AlertOctagon' }
 
-// ─── Driver Sync Modal ────────────────────────────────────────
+// ─── Responder Sync Modal ─────────────────────────────────────
 function DriverSyncModal({ job, onClose }) {
   const [tab,      setTab]      = useState('link')   // link | qr | email | bluetooth
   const [status,   setStatus]   = useState(null)     // {ok, msg}
@@ -42,8 +42,8 @@ function DriverSyncModal({ job, onClose }) {
     <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="bg-[#0d1426] border border-slate-800/60 sm:rounded-xl rounded-t-xl p-6 w-full sm:max-w-sm text-center">
         <Icon name="AlertCircle" size={32} className="text-amber-400 mx-auto mb-3" />
-        <p className="text-white font-semibold mb-1">No driver assigned</p>
-        <p className="text-slate-500 text-xs mb-4">Assign a driver to this job before sending.</p>
+        <p className="text-white font-semibold mb-1">No responder assigned</p>
+        <p className="text-slate-500 text-xs mb-4">Assign a responder to this mission before sending.</p>
         <button onClick={onClose} className="btn-primary w-full">Close</button>
       </div>
     </div>
@@ -160,7 +160,7 @@ function DriverSyncModal({ job, onClose }) {
           {tab === 'link' && (
             <div className="space-y-3">
               <p className="text-slate-400 text-xs leading-relaxed">
-                Copy a deep link. The driver opens it in their browser — jobs import automatically into the AP3X app.
+                Copy a deep link. The responder opens it in their browser — missions import automatically into the Responder App.
                 Works over <strong className="text-slate-300">WiFi, WiFi Direct, AirDrop, Nearby Share</strong> — anything that can open a URL.
               </p>
               <button onClick={handleLink}
@@ -184,7 +184,7 @@ function DriverSyncModal({ job, onClose }) {
           {tab === 'qr' && (
             <div className="space-y-3 flex flex-col items-center">
               <p className="text-slate-400 text-xs leading-relaxed text-center">
-                Driver scans this QR code with their phone camera. Jobs import automatically.
+                Responder scans this QR code with their phone camera. Missions import automatically.
               </p>
               {!qr ? (
                 <button onClick={handleQR}
@@ -213,7 +213,7 @@ function DriverSyncModal({ job, onClose }) {
                 Opens your email client with the job link and sync code pre-filled.
               </p>
               <div className="space-y-1">
-                <label className="text-2xs text-slate-500 uppercase tracking-wider">Driver Email (optional)</label>
+                <label className="text-2xs text-slate-500 uppercase tracking-wider">Responder Email (optional)</label>
                 <input
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -233,7 +233,7 @@ function DriverSyncModal({ job, onClose }) {
           {tab === 'bluetooth' && (
             <div className="space-y-3">
               <p className="text-slate-400 text-xs leading-relaxed">
-                Uses <strong className="text-slate-300">Web Bluetooth</strong> to push jobs directly to the driver's device.
+                Uses <strong className="text-slate-300">Web Bluetooth</strong> to push missions directly to the responder's device.
                 Requires Chrome on Android or desktop. Both devices must support BLE.
               </p>
               <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs ${
@@ -277,7 +277,7 @@ function TelemetryFeed({ events }) {
     <div className="bg-[#0a0f1e] border border-slate-800/40 rounded-xl p-3">
       <div className="flex items-center gap-2 mb-2">
         <StatusDot status="online" />
-        <span className="text-2xs text-slate-400 font-semibold uppercase tracking-wider">Live Driver Telemetry</span>
+        <span className="text-2xs text-slate-400 font-semibold uppercase tracking-wider">Live Responder Telemetry</span>
       </div>
       <div className="space-y-1.5 max-h-32 sm:max-h-40 overflow-y-auto scrollbar-none">
         {events.slice(0, 10).map((e, i) => (
@@ -418,7 +418,7 @@ function AssignModal({ job, drivers, vehicles, onClose, onSaved }) {
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <p className="text-slate-400 text-xs truncate">{job.title}</p>
           <div className="space-y-1.5">
-            <label className="text-xs text-slate-400">Driver</label>
+            <label className="text-xs text-slate-400">Responder</label>
             <select value={driverId} onChange={e => setDriverId(e.target.value)} required className="apex-input w-full">
               <option value="">Select responder…</option>
               {drivers.map(d => <option key={d.id} value={d.id}>{d.full_name || d.name}</option>)}
@@ -464,7 +464,7 @@ function AssignModal({ job, drivers, vehicles, onClose, onSaved }) {
                   </div>
                   <div className="text-center">
                     <div className={`text-sm font-bold font-mono ${dRisk.safetyScore >= 70 ? 'text-emerald-400' : dRisk.safetyScore >= 50 ? 'text-amber-400' : 'text-red-400'}`}>{dRisk.safetyScore}</div>
-                    <div className="text-2xs text-slate-600">Driver Score</div>
+                    <div className="text-2xs text-slate-600">Responder Score</div>
                   </div>
                 </div>
                 {compliance.hardViolations.length > 0 && (
@@ -538,7 +538,7 @@ async function calcRouteSummary(stops) {
   return null
 }
 
-// ─── Job Modal — Full Route Planner ──────────────────────────
+// ─── Mission Modal — Full Assignment Planner ─────────────────
 function JobModal({ onClose, onSaved, vehicles, drivers }) {
   const [mode,   setMode]   = useState('single') // 'single' | 'multi'
   const [form,   setForm]   = useState({
@@ -603,7 +603,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
     const driver  = drivers.find(d => d.id === form.driver_id)
     const vehicle = vehicles.find(v => v.id === form.vehicle_id)
 
-    // Build stops array — driver app reads job.stops[]
+    // Build stops array — responder app reads mission.stops[]
     const stopsPayload = stops
       .filter(s => s.address.trim())
       .map((s, i) => ({
@@ -988,9 +988,9 @@ export default function Dispatch() {
         if (newest) setPendingSuggestion(newest)
       }
     })
-    // Refresh drivers list when driver status changes
+    // Refresh responders list when responder status changes
     const unsubDrivers = subscribeToDrivers(() => loadDriversAndVehicles())
-    // Listen for incoming driver telemetry
+    // Listen for incoming responder telemetry
     const unsubTel = listenForDriverTelemetry((pkg) => {
       setTelEvents(prev => [{ ...pkg, ts: Date.now() }, ...prev].slice(0, 50))
     })
@@ -1068,7 +1068,7 @@ export default function Dispatch() {
           <div className="flex flex-col items-center justify-center py-24 text-slate-600">
             <Icon name="Radio" size={40} className="mb-4 opacity-20" />
             <p className="text-sm">No jobs yet</p>
-            <p className="text-xs mt-1">Create a job and assign it to a driver</p>
+            <p className="text-xs mt-1">Create a mission and assign it to a responder</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">

@@ -38,7 +38,7 @@ const PRI = {
 const STOP_ICON = {
   pickup:     'Package',
   dropoff:    'MapPin',
-  depot:      'Home',
+  hub:         'Home',
   inspection: 'ClipboardCheck',
   waypoint:   'Circle',
 }

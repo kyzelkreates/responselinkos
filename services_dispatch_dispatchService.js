@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * AP3X — Dispatch Service  (Fleet Control OS)
+ * AP3X — Mission Assignment Service  (ResponseLink OS™)
  *
  * CONTRACT (LOCKED):
  *   - Supabase is the ONLY source of truth
@@ -68,7 +68,7 @@ export const dispatchService = {
   /**
    * Step 0 of dispatch flow.
    * Inserts into tasks (status = 'pending') via Supabase.
-   * Supabase Realtime → Driver PWA instantly.
+   * Supabase Realtime → Responder PWA instantly.
    */
   async createJob(payload) {
     const result = await createTask({
@@ -113,7 +113,7 @@ export const dispatchService = {
   /**
    * Assigns task → writes job_assignments + tasks.assigned_driver.
    * tasks.status → 'assigned'.
-   * Supabase Realtime → Driver PWA within ~200 ms.
+   * Supabase Realtime → Responder PWA within ~200 ms.
    */
   async assignJob(taskId, driverId, vehicleId, driverName, vehicleReg) {
     const result = await assignTask(taskId, driverId, vehicleId || null, driverName || '', vehicleReg || '')

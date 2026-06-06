@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * APEX AI — Live Navigation / Fleet Map Page
+ * ResponseLink OS™ — Live Map & Mission Navigation
  * ============================================================
  * Changes vs previous:
  *  - Live map crash fixed (NaN/null coordinate guards everywhere)
@@ -54,7 +54,7 @@ function VehiclePanel({ vehicle, onClose, onFocus }) {
             <StatusDot status={statusDot} />
             <div>
               <div className="font-mono font-bold text-cyan-400 text-sm">{vehicle.label}</div>
-              <div className="text-xs text-slate-500">{vehicle.sublabel || 'No driver assigned'}</div>
+              <div className="text-xs text-slate-500">{vehicle.sublabel || 'No responder assigned'}</div>
             </div>
           </div>
           <button onClick={onClose} className="p-1 text-slate-600 hover:text-slate-400 transition-colors">
@@ -82,7 +82,7 @@ function VehiclePanel({ vehicle, onClose, onFocus }) {
   )
 }
 
-// ─── Fleet Sidebar ────────────────────────────────────────────
+// ─── Mission Sidebar ──────────────────────────────────────────
 function FleetSidebar({ vehicles, activeId, onSelect, isLoading }) {
   const [search, setSearch] = useState('')
   const filtered = vehicles.filter(v =>
@@ -95,7 +95,7 @@ function FleetSidebar({ vehicles, activeId, onSelect, isLoading }) {
     <div className="absolute top-4 left-4 z-[999] w-60 pointer-events-auto">
       <div className="bg-[#0d1426]/97 border border-slate-700/50 rounded-xl overflow-hidden backdrop-blur-sm shadow-2xl">
         <div className="px-3 py-2.5 border-b border-slate-800/60 flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-200">Live Fleet</span>
+          <span className="text-xs font-semibold text-slate-200">Live Responders</span>
           <div className="flex items-center gap-1.5">
             {isLoading
               ? <Icon name="Loader2" size={11} className="text-slate-600 animate-spin" />
@@ -546,7 +546,7 @@ export default function Navigation() {
     getVehicles().then(v => setFleetVehicles(Array.isArray(v) ? v : [])).catch(() => {})
   }, [])
 
-  // Build markers from fleet vehicles + live driver positions
+  // Build markers from support units + live responder positions
   // Guard every lat/lng — Leaflet crashes on NaN/null
   useEffect(() => {
     const vehicleMarkers = vehicles.map(v => ({
@@ -558,7 +558,7 @@ export default function Navigation() {
       status:   v.status,
       speed:    v.speed,
       fuel:     v.fuel_level,
-      _type:    'fleet',
+      _type:    'support_unit',
     })).filter(m =>
       m.lat != null && m.lng != null &&
       isFinite(Number(m.lat)) && isFinite(Number(m.lng))
@@ -569,7 +569,7 @@ export default function Navigation() {
       if (age > 5 * 60 * 1000) return null
       if (!isFinite(pos.lat) || !isFinite(pos.lng)) return null
       return {
-        id:       `driver-${pos.vehicle_id}`,
+        id:       `responder-${pos.vehicle_id}`,
         lat:      pos.lat,
         lng:      pos.lng,
         label:    pos.vehicle_id || 'Responder',
@@ -577,7 +577,7 @@ export default function Navigation() {
         status:   'active',
         speed:    pos.speed,
         heading:  pos.heading,
-        _type:    'driver',
+        _type:    'responder',
         _live:    true,
       }
     }).filter(Boolean)
@@ -587,7 +587,7 @@ export default function Navigation() {
     setMapMarkers([...driverMarkers, ...nonOverridden])
   }, [vehicles, liveDrivers])
 
-  // Subscribe to live driver location updates
+  // Subscribe to live responder location updates
   useEffect(() => {
     const unsub = subscribeToDriverLocations((payload) => {
       if (payload._bulk) {

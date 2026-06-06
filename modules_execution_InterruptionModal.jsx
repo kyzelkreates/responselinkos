@@ -41,7 +41,7 @@ const INTERRUPT_TYPES = [
   {
     key:   'job_pause',
     label: 'Pause Job',
-    sub:   'Temporary hold — driver break, loading delay, etc.',
+    sub:   'Temporary hold — responder break, loading delay, etc.',
     icon:  'PauseCircle',
     color: 'text-amber-400',
     bg:    'bg-amber-500/10 border-amber-500/25',
@@ -100,7 +100,7 @@ export default function InterruptionModal({ jobId, driverId, tenantId, execution
       driver_id:      driverId,
       tenant_id:      tenantId,
       interruption_type: selected.key,
-      reason:         reason.trim() || `${selected.label} — driver initiated`,
+      reason:         reason.trim() || `${selected.label} — responder initiated`,
       driver_lat:     driverPos?.[0] ?? null,
       driver_lng:     driverPos?.[1] ?? null,
       speed_at_event: speed,
@@ -109,7 +109,7 @@ export default function InterruptionModal({ jobId, driverId, tenantId, execution
     try {
       if (selected.key === 'emergency_stop') {
         await executeEmergencyStop({ ...base })
-        setDone({ icon: 'AlertOctagon', message: 'Emergency stop logged. Fleet notified.' })
+        setDone({ icon: 'AlertOctagon', message: 'Emergency stop logged. Coordinator notified.' })
         onEmergency()
 
       } else if (selected.key === 'job_pause') {
@@ -160,7 +160,7 @@ export default function InterruptionModal({ jobId, driverId, tenantId, execution
       driver_id:         driverId,
       tenant_id:         tenantId,
       interruption_type: 'job_pause',
-      reason:            'Driver resumed job',
+      reason:            'Responder resumed mission',
       driver_lat:        driverPos?.[0] ?? null,
       driver_lng:        driverPos?.[1] ?? null,
       resolution:        'auto_approved',

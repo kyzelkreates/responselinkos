@@ -72,7 +72,7 @@ export function validate(task, driver, vehicle = null, allActiveTasks = []) {
   if (driverActiveTasks.length >= 1) {
     const activeTask = driverActiveTasks[0]
     failures.push(
-      `Driver already has an active task: "${activeTask.title || activeTask.id}" (${activeTask.status})`
+      `Responder already has an active task: "${activeTask.title || activeTask.id}" (${activeTask.status})`
     )
   }
 

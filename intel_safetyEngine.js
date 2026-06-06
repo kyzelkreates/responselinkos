@@ -196,7 +196,7 @@ export const safetyEngine = {
 
       // Derive a live fatigue score from available session data.
       // Priority: explicit hours_today/session_hours field on driver record
-      // → stored stress state (updated by Driver PWA events via Federation OS).
+      // → stored stress state (updated by Responder PWA events via Federation OS).
       // Rule: 9h = EU standard daily limit = 100 score. Linear scale, clamped 0-100.
       const sessionH = parseFloat(driver.hours_today ?? driver.session_hours ?? 0)
       const liveFatigueScore = sessionH > 0

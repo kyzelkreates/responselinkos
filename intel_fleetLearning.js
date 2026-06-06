@@ -7,7 +7,7 @@
  * Learns from aggregated telemetry, job outcomes, and timing data.
  *
  * Learns:
- *  - Depot congestion patterns (by time of day)
+ *  - Hub congestion patterns (by time of day)
  *  - Recurring bottleneck roads
  *  - Best dispatch times for each corridor
  *  - Loading bay inefficiencies
@@ -24,7 +24,7 @@ import routeMemory from './intel_routeMemory'
 
 const NS = 'apex:intel:fleet'
 const LS_KEYS = {
-  DEPOT_CONGESTION:  `${NS}:depot`,
+  HUB_CONGESTION:  `${NS}:hub`,
   DISPATCH_TIMING:   `${NS}:dispatch_timing`,
   LOADING_TIMES:     `${NS}:loading`,
   UTILISATION:       `${NS}:utilisation`,
@@ -57,14 +57,14 @@ function timeLabel(bucket) {
 // ─── Public API ───────────────────────────────────────────────
 export const fleetLearning = {
 
-  // ── 1. Depot congestion ───────────────────────────────────
+  // ── 1. Hub congestion ─────────────────────────────────────
   recordDepotEvent({
     depotId = 'main',
     eventType,    // 'vehicle_in'|'vehicle_out'|'loading_start'|'loading_end'|'queue_formed'
-    vehicleCount, // total vehicles at depot at this moment
+    vehicleCount, // total support units at hub at this moment
     waitMinutes = 0,
   }) {
-    const rows  = readStore(LS_KEYS.DEPOT_CONGESTION)
+    const rows  = readStore(LS_KEYS.HUB_CONGESTION)
     const b     = timeBucket()
     const dow   = dayOfWeek()
     const key   = `${depotId}:${dow}:${b}`
@@ -76,7 +76,7 @@ export const fleetLearning = {
       existing.avg_vehicles = Math.round((existing.avg_vehicles * (n - 1) + (vehicleCount || 0)) / n)
       existing.avg_wait_min = Math.round((existing.avg_wait_min * (n - 1) + waitMinutes) / n)
       existing.last_ts = Date.now()
-      writeStore(LS_KEYS.DEPOT_CONGESTION, rows)
+      writeStore(LS_KEYS.HUB_CONGESTION, rows)
     } else {
       rows.push({
         id: uid(), pattern_key: key, depot_id: depotId,
@@ -87,14 +87,14 @@ export const fleetLearning = {
         event_count: 1,
         ts: Date.now(), last_ts: Date.now(),
       })
-      writeStore(LS_KEYS.DEPOT_CONGESTION, rows.slice(-1000))
+      writeStore(LS_KEYS.HUB_CONGESTION, rows.slice(-1000))
     }
   },
 
   getDepotCongestionForecast(depotId = 'main', ts = Date.now()) {
     const b   = timeBucket(ts)
     const dow = dayOfWeek(ts)
-    const rows = readStore(LS_KEYS.DEPOT_CONGESTION)
+    const rows = readStore(LS_KEYS.HUB_CONGESTION)
 
     // Exact slot
     const exact = rows.find(r => r.depot_id === depotId && r.dow === dow && r.bucket === b)
@@ -125,7 +125,7 @@ export const fleetLearning = {
   },
 
   getBestDispatchTime(depotId = 'main', dow = dayOfWeek()) {
-    const rows = readStore(LS_KEYS.DEPOT_CONGESTION)
+    const rows = readStore(LS_KEYS.HUB_CONGESTION)
       .filter(r => r.depot_id === depotId && r.dow === dow)
 
     if (rows.length === 0) return null

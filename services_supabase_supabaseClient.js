@@ -47,7 +47,7 @@ const IGNORABLE_ERROR_CODES = new Set([
 //   2. VITE_ build-time env vars (baked in at build/deploy time)
 //   3. Empty/disabled fallback
 //
-// This means the Driver PWA on a separate device will auto-connect
+// This means the Responder PWA on a separate device will auto-connect
 // as long as VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set
 // in the .env file before the build, even without touching Settings.
 export function getSupabaseSettings() {

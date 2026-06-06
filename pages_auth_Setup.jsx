@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * APEX AI — First-Run Setup Page
- * Creates the initial admin + driver accounts.
+ * Creates the initial admin + responder accounts.
  * Shown only once — when apex:setup_complete is not set.
  * ============================================================
  */
@@ -58,11 +58,11 @@ export default function Setup() {
   }
 
   const validateDriver = () => {
-    if (!driver.username.trim())        return 'Driver username is required.'
+    if (!driver.username.trim())        return 'Responder username is required.'
     if (driver.password.length < 6)    return 'Password must be at least 6 characters.'
     if (driver.password !== driver.confirm) return 'Passwords do not match.'
     if (driver.username.trim().toLowerCase() === admin.username.trim().toLowerCase())
-      return 'Driver username must differ from admin.'
+      return 'Responder username must differ from admin.'
     return null
   }
 
@@ -142,19 +142,19 @@ export default function Setup() {
                 <p className="text-slate-500 text-xs">ResponseLink OS™ Command Dashboard administrator credentials</p>
               </div>
               <Field label="Username *"    value={admin.username} onChange={setA('username')} placeholder="e.g. admin" />
-              <Field label="Email (optional)" type="email" value={admin.email}    onChange={setA('email')}    placeholder="admin@fleet.io" required={false} />
+              <Field label="Email (optional)" type="email" value={admin.email}    onChange={setA('email')}    placeholder="admin@organisation.io" required={false} />
               <Field label="Password *"    type="password" value={admin.password} onChange={setA('password')} placeholder="Min 6 characters"
                      show={showPass.ap} onToggle={() => toggle('ap')} />
               <Field label="Confirm Password *" type="password" value={admin.confirm}  onChange={setA('confirm')}  placeholder="Repeat password"
                      show={showPass.ac} onToggle={() => toggle('ac')} />
               {error && <p className="text-red-400 text-xs bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
               <button type="submit" className="btn-primary w-full">
-                Next — Driver Account <Icon name="ArrowRight" size={14} className="inline ml-1" />
+                Next — Responder Account <Icon name="ArrowRight" size={14} className="inline ml-1" />
               </button>
             </form>
           )}
 
-          {/* ── Step 2: Driver Account ── */}
+          {/* ── Step 2: Responder Account ── */}
           {step === 2 && (
             <form onSubmit={handleNextStep2} className="space-y-4">
               <div className="flex items-center gap-2 mb-1">
@@ -163,11 +163,11 @@ export default function Setup() {
                   <Icon name="ArrowLeft" size={14} />
                 </button>
                 <div>
-                  <h2 className="text-base font-semibold text-white">Driver Account</h2>
+                  <h2 className="text-base font-semibold text-white">Responder Account</h2>
                   <p className="text-slate-500 text-xs">AP3X navigation app credentials</p>
                 </div>
               </div>
-              <Field label="Username *"    value={driver.username} onChange={setD('username')} placeholder="e.g. driver1" />
+              <Field label="Username *"    value={driver.username} onChange={setD('username')} placeholder="e.g. responder1" />
               <Field label="Email (optional)" type="email" value={driver.email}    onChange={setD('email')}    placeholder="responder@organisation.io" required={false} />
               <Field label="Password *"    type="password" value={driver.password} onChange={setD('password')} placeholder="Min 6 characters"
                      show={showPass.dp} onToggle={() => toggle('dp')} />
@@ -198,7 +198,7 @@ export default function Setup() {
               <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-3 space-y-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Icon name="Shield" size={13} className="text-cyan-400" />
-                  <span className="text-cyan-400 text-xs font-semibold uppercase tracking-wider">Fleet Admin</span>
+                  <span className="text-cyan-400 text-xs font-semibold uppercase tracking-wider">Admin</span>
                 </div>
                 <p className="text-white text-sm font-medium">{admin.username}</p>
                 {admin.email && <p className="text-slate-500 text-xs">{admin.email}</p>}
@@ -208,7 +208,7 @@ export default function Setup() {
               <div className="bg-violet-500/5 border border-violet-500/20 rounded-lg p-3 space-y-1">
                 <div className="flex items-center gap-2 mb-2">
                   <Icon name="Navigation" size={13} className="text-violet-400" />
-                  <span className="text-violet-400 text-xs font-semibold uppercase tracking-wider">Driver</span>
+                  <span className="text-violet-400 text-xs font-semibold uppercase tracking-wider">Responder</span>
                 </div>
                 <p className="text-white text-sm font-medium">{driver.username}</p>
                 {driver.email && <p className="text-slate-500 text-xs">{driver.email}</p>}

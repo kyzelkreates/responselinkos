@@ -217,15 +217,15 @@ class LocalRoutingEngine {
    * Given a fleet of jobs, returns an ordered route for minimum total distance.
    * Operates fully offline using haversine distances.
    *
-   * @param {object} depot   { lat, lng } — starting point
+   * @param {object} hub   { lat, lng } — starting point
    * @param {Array}  stops   [{ lat, lng, id, label }]
    * @returns {Array} ordered stops with cumulative distance
    */
-  optimiseBatch(depot, stops) {
+  optimiseBatch(hub, stops) {
     if (!stops?.length) return []
     const remaining  = [...stops]
     const ordered    = []
-    let   current    = { lat: depot.lat, lng: depot.lng }
+    let   current    = { lat: hub.lat, lng: hub.lng }
     let   cumDist    = 0
 
     while (remaining.length > 0) {

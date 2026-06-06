@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * AP3X — Job Audit Panel (Fleet OS + Control OS)
+ * AP3X — Mission Audit Panel (ResponseLink OS™)
  * modules_execution_JobAuditPanel.jsx
  *
  * Dispatcher-side view for a single job's execution:

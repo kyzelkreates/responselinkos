@@ -6,7 +6,7 @@
  *   - Vehicles:      localDB / apex:db:vehicles (via fleetService)
  *   - Drivers:       localDB / apex:db:drivers  (via driverService)
  *   - Telemetry:     localDB / apex:db:telemetry + apex:telemetry BroadcastChannel
- *   - AI Reports:    localDB / apex:db:driver_ai_reports (pushAIReportToFleet)
+ *   - AI Reports:    localDB / apex:db:responder_ai_reports (pushAIReportToResponseLink)
  *   - Safety Alerts: localDB / apex:db:safety_alerts (safetyService)
  *   - Jobs:          localDB / apex:db:jobs (dispatchService)
  *   - Compliance:    localDB / apex:db:compliance (complianceService)
@@ -269,7 +269,7 @@ function OverviewTab({ timeSeries, period, vehicles, drivers, aiReports, alerts 
     return rows.length ? Math.round(rows.reduce((s, d) => s + d.utilisation, 0) / rows.length) : 0
   }, [timeSeries])
 
-  // Fleet status pie — from real vehicle records
+  // Support unit status — from real support unit records
   const fleetPie = useMemo(() => {
     if (!vehicles.length) return []
     const c = { active: 0, idle: 0, maintenance: 0, offline: 0 }

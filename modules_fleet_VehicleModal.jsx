@@ -3,7 +3,7 @@
  * APEX AI — Vehicle Modal  (Full Legal & Safety Compliance)
  *
  * SECTIONS
- *  1  Identity         — reg, fleet no, make/model/variant, year, first-reg date,
+ *  1  Identity         — reg, asset no, make/model/variant, year, first-reg date,
  *                        VIN, colour, body type, GB type-approval category
  *  2  Engine & Fuel    — engine, power, torque, fuel type, Euro standard,
  *                        AdBlue, DPF/SCR, transmission, CO₂, noise, fuel card
@@ -15,7 +15,7 @@
  *                        LEZ/ULEZ/CAZ, night restrictions, governed speed
  *  7  Cargo & Equipment— cargo type, temp-controlled, tail lift, crane,
  *                        curtainsider, double-deck, load restraint, trailer
- *  8  Driver & Tachograph— assigned driver, CPC, tacho card, tacho type,
+ *  8  Responder & Tachograph — assigned responder, CPC, tacho card, tacho type,
  *                        calibration dates, download dates
  *  9  Operator Licence — O-licence type/number/area/expiry, operating centre,
  *                        transport manager, authorised vehicles
@@ -41,7 +41,7 @@ const SECTIONS = [
   { key: 'axles',        label: 'Axles & Tyres',    icon: 'CircleDot'     },
   { key: 'restrictions', label: 'Restrictions',     icon: 'AlertOctagon'  },
   { key: 'cargo',        label: 'Cargo',            icon: 'Package'       },
-  { key: 'driver',       label: 'Driver & Tacho',   icon: 'User'          },
+  { key: 'driver',       label: 'Responder & Tacho',   icon: 'User'          },
   { key: 'operator',     label: 'Operator Licence', icon: 'Briefcase'     },
   { key: 'insurance',    label: 'Insurance',        icon: 'Shield'        },
   { key: 'safety',       label: 'Inspections',      icon: 'ClipboardCheck'},
@@ -283,7 +283,7 @@ export default function VehicleModal({ vehicle, onClose, onSaved }) {
                 <F label="Registration Number" required>
                   <input className={I} value={form.reg_number} onChange={e => set('reg_number', e.target.value.toUpperCase())} placeholder="AB12 CDE" />
                 </F>
-                <F label="Fleet / Asset Number">
+                <F label="Asset Number">
                   <input className={I} value={form.fleet_number} onChange={e => set('fleet_number', e.target.value)} placeholder="FLT-042" />
                 </F>
                 <F label="Make" required>
@@ -733,30 +733,30 @@ export default function VehicleModal({ vehicle, onClose, onSaved }) {
           {/* ══════════════ 8. DRIVER & TACHO ══════════════ */}
           {section === 'driver' && (
             <>
-              <SH icon="User" title="Driver & Tachograph" sub="Assigned driver CPC, tachograph calibration and download records" />
+              <SH icon="User" title="Responder & Tachograph" sub="Assigned responder CPC, tachograph calibration and download records" />
               <InfoBox color="amber" icon="AlertTriangle">
-                GB law: digital tachograph must be calibrated every 2 years. Driver CPC card expires every 5 years (35 hours periodic training). Both are O-licence conditions.
+                GB law: digital tachograph must be calibrated every 2 years. Responder CPC card expires every 5 years (35 hours periodic training). Both are O-licence conditions.
               </InfoBox>
               <div className="grid grid-cols-2 gap-3">
-                <F label="Assigned Driver Name">
+                <F label="Assigned Responder Name">
                   <input className={I} value={form.assigned_driver} onChange={e => set('assigned_driver', e.target.value)} placeholder="Full name" />
                 </F>
-                <F label="Driver Licence Number">
+                <F label="Responder Licence Number">
                   <input className={I} value={form.assigned_driver_licence} onChange={e => set('assigned_driver_licence', e.target.value)} placeholder="DVLA licence number" />
                 </F>
-                <F label="Driver CPC Card Number" note="Certificate of Professional Competence">
+                <F label="Responder CPC Card Number" note="Certificate of Professional Competence">
                   <input className={I} value={form.driver_cpc_number} onChange={e => set('driver_cpc_number', e.target.value)} placeholder="CPC card / DQC number" />
                 </F>
-                <F label="Driver CPC Expiry">
+                <F label="Responder CPC Expiry">
                   <div>
                     <input className={I} type="date" value={form.driver_cpc_expiry} onChange={e => set('driver_cpc_expiry', e.target.value)} />
                     {form.driver_cpc_expiry && <div className={`text-2xs mt-0.5 font-semibold ${ec(form.driver_cpc_expiry)}`}>{el(form.driver_cpc_expiry)}</div>}
                   </div>
                 </F>
-                <F label="Driver Tachograph Card Number">
+                <F label="Responder Tachograph Card Number">
                   <input className={I} value={form.driver_tacho_card} onChange={e => set('driver_tacho_card', e.target.value)} placeholder="Tacho card number" />
                 </F>
-                <F label="Driver Tacho Card Expiry">
+                <F label="Responder Tacho Card Expiry">
                   <div>
                     <input className={I} type="date" value={form.driver_tacho_expiry} onChange={e => set('driver_tacho_expiry', e.target.value)} />
                     {form.driver_tacho_expiry && <div className={`text-2xs mt-0.5 font-semibold ${ec(form.driver_tacho_expiry)}`}>{el(form.driver_tacho_expiry)}</div>}
@@ -1028,7 +1028,7 @@ export default function VehicleModal({ vehicle, onClose, onSaved }) {
                 </div>
               </div>
               <div className="mt-2 p-4 rounded-xl border border-slate-800/40 bg-slate-900/20 space-y-3">
-                <div className="flex items-center gap-2"><Icon name="Zap" size={13} className="text-blue-400" /><span className="text-xs font-semibold text-slate-300">Advanced Driver Assistance (ADAS)</span></div>
+                <div className="flex items-center gap-2"><Icon name="Zap" size={13} className="text-blue-400" /><span className="text-xs font-semibold text-slate-300">Advanced Assistance Systems (ADAS)</span></div>
                 <div className="grid grid-cols-2 gap-3">
                   <F label="AEBS Fitted" note="Advanced Emergency Braking System — mandatory for new N2/N3">
                     <Toggle value={form.aebs_fitted} onChange={v => set('aebs_fitted', v)} labelOn="Yes" labelOff="No" />

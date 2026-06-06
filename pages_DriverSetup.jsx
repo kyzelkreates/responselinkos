@@ -270,7 +270,7 @@ export default function DriverSetup() {
     const driverId = codeGenDriver || `guest-${Date.now()}`
     const name     = driver?.full_name || 'Guest Responder'
     const reg      = driver?.vehicle_reg || driver?.license_plate || '—'
-    const appURL   = `${window.location.origin}/#/driver-app`
+    const appURL   = `${window.location.origin}/#/responder-app`
     const code     = generateSyncCode(driverId, name, reg, 60)
     const qr       = getSyncCodeQR(code, 240)
     setPairingCode(code)

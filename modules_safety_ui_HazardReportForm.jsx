@@ -3,7 +3,7 @@
  * Submit road hazards with geolocation.
  * Saves locally first (offline vault) then syncs to Supabase.
  *
- * DRIVER PWA ONLY.
+ * RESPONDER PWA ONLY.
  */
 import { useState } from 'react'
 import { getSupabaseClient } from './services_supabase_supabaseClient'

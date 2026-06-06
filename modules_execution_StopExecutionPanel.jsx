@@ -37,7 +37,7 @@ import {
 const STOP_TYPE_CFG = {
   pickup:     { icon: 'Package',        color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', label: 'Pickup'     },
   dropoff:    { icon: 'MapPin',         color: 'text-violet-400',  bg: 'bg-violet-500/10 border-violet-500/20',  label: 'Dropoff'    },
-  depot:      { icon: 'Home',           color: 'text-cyan-400',    bg: 'bg-cyan-500/10 border-cyan-500/20',      label: 'Depot'      },
+  hub:         { icon: 'Home',           color: 'text-cyan-400',    bg: 'bg-cyan-500/10 border-cyan-500/20',      label: 'Hub'      },
   inspection: { icon: 'ClipboardCheck', color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20',   label: 'Inspection' },
   waypoint:   { icon: 'Circle',         color: 'text-slate-400',   bg: 'bg-slate-800/60 border-slate-700',      label: 'Waypoint'   },
 }

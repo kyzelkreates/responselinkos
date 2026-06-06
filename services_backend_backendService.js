@@ -274,7 +274,7 @@ export async function getTasks(filter = {}) {
 }
 
 /**
- * Create a task (dispatcher → Supabase → Realtime → Driver PWA).
+ * Create a task (coordinator → Supabase → Realtime → Responder PWA).
  * Only inserts into `tasks`. Assignment is separate (assignTask).
  */
 export async function createTask(payload) {
@@ -336,7 +336,7 @@ export async function updateTask(taskId, updates) {
  *   1. Insert into job_assignments (creates audit record)
  *   2. Update tasks.assigned_driver + tasks.status = 'assigned'
  *   3. Update drivers.current_task
- * Supabase Realtime on tasks + job_assignments fires → Driver PWA receives it.
+ * Supabase Realtime on tasks + job_assignments fires → Responder PWA receives it.
  */
 export async function assignTask(taskId, driverId, vehicleId = null, driverName = '', vehicleReg = '') {
   const ts = now()
@@ -420,7 +420,7 @@ export const assignJobToDriver = (taskId, driverId, driverName = '') =>
 /**
  * Subscribe to task changes.
  * Realtime ONLY on: tasks (contract rule).
- * driverFilter: subscribe only to tasks for a specific driver (Driver PWA).
+ * responderFilter: subscribe only to tasks for a specific responder (Responder PWA).
  */
 export function subscribeToTasks(callback, driverFilter = null) {
   if (!isLiveMode()) {
@@ -499,7 +499,7 @@ export function subscribeToJobAssignments(callback) {
 
 /**
  * Upsert driver GPS location.
- * Called by Driver PWA every 5 seconds.
+ * Called by Responder PWA every 5 seconds.
  */
 export async function upsertDriverLocation(driverId, locationData) {
   if (!isLiveMode()) return { ok: false, error: 'offline' }
@@ -594,7 +594,7 @@ export { getVehicles as getFleetNodes }
 
 
 // ═══════════════════════════════════════════════════════════════
-// OFFLINE RECOVERY  (Driver PWA — reconnect flush)
+// OFFLINE RECOVERY  (Responder PWA — reconnect flush)
 // ═══════════════════════════════════════════════════════════════
 
 export async function recoverOfflineTasks(driverId, pendingLocalUpdates = []) {
@@ -731,7 +731,7 @@ export async function setSetting(key, value) {
 
 // ═══════════════════════════════════════════════════════════════
 // DASHBOARD EVENTS — REALTIME SUBSCRIPTION (READ ONLY)
-// Enables Fleet OS to receive live inserts from dashboard_events.
+// Enables ResponseLink OS™ to receive live inserts from dashboard_events.
 // Matches the exact pattern of subscribeToTasks / subscribeToDrivers.
 // ═══════════════════════════════════════════════════════════════
 

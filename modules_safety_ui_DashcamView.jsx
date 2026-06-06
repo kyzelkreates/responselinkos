@@ -3,7 +3,7 @@
  * Live camera feed + clip recording via MediaDevices API.
  * Integrates on-device VisionAI and logs captures to the offline vault.
  *
- * DRIVER PWA ONLY — no Fleet OS coupling.
+ * RESPONDER PWA ONLY — no ResponseLink OS™ coupling.
  */
 import { useRef, useState, useEffect, useCallback } from 'react'
 import Icon from './components_ui_Icon'

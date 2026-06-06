@@ -321,7 +321,7 @@ export const routeMemory = {
   // ── Fleet-wide pattern ───────────────────────────────────
   recordFleetPattern({
     patternType,  // 'depot_congestion'|'bottleneck'|'dispatch_timing'|'loading_delay'
-    locationKey,  // lat,lng or depot name
+    locationKey,  // lat,lng or hub name
     severityScore, // 0-100
     data = {},
   }) {

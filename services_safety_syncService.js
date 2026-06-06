@@ -2,11 +2,11 @@
  * AP3X Safety Sync Service
  * Flushes the offline safety vault to Supabase when connectivity is restored.
  *
- * READ-ONLY integration with Fleet OS:
+ * READ-ONLY integration with ResponseLink OS™:
  *   - writes ONLY to driver-safety tables (safety_incidents, driver_dashcam_events)
- *   - never touches Fleet OS tables (tasks, job_assignments, driver_locations, etc.)
+ *   - never touches ResponseLink OS™ tables (tasks, job_assignments, driver_locations, etc.)
  *
- * DRIVER PWA ONLY.
+ * RESPONDER PWA ONLY.
  */
 
 import { getSupabaseClient } from './services_supabase_supabaseClient'
@@ -38,7 +38,7 @@ export async function flushSafetyQueue() {
   let failed    = 0
 
   for (const item of queue) {
-    // Guard: never write to Fleet OS tables
+    // Guard: never write to ResponseLink OS™ tables
     if (!ALLOWED_TABLES.has(item.table_name)) {
       console.warn('[SafetySync] Blocked write to non-safety table:', item.table_name)
       await removeSyncItem(item.id)
@@ -72,7 +72,7 @@ export async function flushSafetyQueue() {
 
 /**
  * Start watching online/offline events and flush on reconnect.
- * Call once when the Driver PWA mounts.
+ * Call once when the Responder PWA mounts.
  */
 export function startSafetySync() {
   // Flush immediately if already online
