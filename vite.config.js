@@ -54,7 +54,7 @@ export default defineConfig({
           {
             name:        'Responder App',
             short_name:  'Responder',
-            url:         '/#/driver-app',
+            url:         '/#/responder-app',
             description: 'Open the ResponseLink OS™ Responder PWA',
             icons: [{ src: 'icons/icon-192x192.png', sizes: '192x192' }],
           },
@@ -63,6 +63,13 @@ export default defineConfig({
             short_name:  'Dashboard',
             url:         '/#/dashboard',
             description: 'Open the ResponseLink OS™ Command Dashboard',
+            icons: [{ src: 'icons/icon-192x192.png', sizes: '192x192' }],
+          },
+          {
+            name:        'Service User App',
+            short_name:  'Service User',
+            url:         '/#/service-user-pwa',
+            description: 'Open the ResponseLink OS™ Service User PWA',
             icons: [{ src: 'icons/icon-192x192.png', sizes: '192x192' }],
           },
         ],

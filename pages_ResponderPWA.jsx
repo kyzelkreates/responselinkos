@@ -52,6 +52,7 @@ import {
   getPWASyncSummary,
 } from './core_rlPWAHelpers'
 import { getOnlineStatus, propagateResponderUpdate, SYNC_ACTION } from './core_rlSyncEngine'
+import LiveModeStatusPanel from './components_ui_LiveModeStatusPanel'
 
 // ─── Colour tokens ────────────────────────────────────────────
 const GOLD   = '#C9A84C'
@@ -196,6 +197,7 @@ function HomeScreen({ responder, missions, sync, isDemo, navigate, setScreen, se
 
   return (
     <div className="space-y-5">
+      <LiveModeStatusPanel variant="responder" compact={true} />
       {/* Responder identity */}
       {responder ? (
         <div className="rounded-xl border p-4" style={{ background: CARD, borderColor: '#C9A84C25' }}>

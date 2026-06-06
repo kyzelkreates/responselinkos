@@ -61,6 +61,7 @@ import {
   CONSENT_STATUS_LABELS,
 } from './core_rlSUHelpers'
 import { getOnlineStatus } from './core_rlSyncEngine'
+import LiveModeStatusPanel from './components_ui_LiveModeStatusPanel'
 
 // ─── Colour tokens ────────────────────────────────────────────
 const GOLD   = '#C9A84C'
@@ -298,6 +299,7 @@ function HomeScreen({ su, missions, sync, isDemo, setScreen, onSelectProfile }) 
 
   return (
     <div className="space-y-5">
+      <LiveModeStatusPanel variant="serviceuser" compact={true} />
       {/* Profile card */}
       {su ? (
         <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: '#C9A84C28' }}>

@@ -48,6 +48,7 @@ import {
   getDashboardRiskStatus, detectEvidenceGaps, detectDataFreshnessWarnings,
   getRiskColor, markRiskFlagReviewed, markHelpRequestReviewed,
 } from './core_rlRiskEngine'
+import LiveModeStatusPanel from './components_ui_LiveModeStatusPanel'
 import {
   getSyncQueueSummary, getPendingSyncItems, getFailedSyncItems,
   getConflictSyncItems, getSupervisorReviewItems, getLatestSyncedActivity,
@@ -1132,6 +1133,12 @@ export default function CommandDashboard() {
       </div>
 
       <div className="flex-1 p-4 sm:p-6 space-y-5">
+
+        {/* ── Backend / Live Mode Status Panel (Run 9) ──────── */}
+        <LiveModeStatusPanel
+          variant="dashboard"
+          recordCount={isDemo ? null : (missions.length + responders.length + serviceUsers.length)}
+        />
 
         {/* ── Live Mode Empty State ────────────────────────────── */}
         {!isDemo && !hasData && (
