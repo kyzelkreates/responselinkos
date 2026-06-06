@@ -136,7 +136,7 @@ export function mountDriverBridge(profile) {
     apexClient.stopBatchTimer()
   }
 
-  // GPS tick — call from the driver app's GPS interval (5s)
+  // location tick — call from the responder app's GPS interval (5s)
   const onGpsTick = ({ lat, lng, speed, fuel, status }) => {
     apexClient.pushVehicleStatus({ vehicleId, driverId, lat, lng, speed, fuel, status })
   }

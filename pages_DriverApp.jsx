@@ -5,11 +5,11 @@
  *
  * Features:
  *  ✅ OSM / OSRM navigation — live route, polyline, step-by-step turn guidance
- *  ✅ Live GPS telemetry push → fleet dashboard (BroadcastChannel + localStorage)
+ *  ✅ Live GPS telemetry push → command dashboard (BroadcastChannel + localStorage)
  *  ✅ Fatigue detection: session timer, behavioural signals (speed variance,
  *      heading jitter, stop patterns), EU 4.5h break enforcement
  *  ✅ Harsh-event detection (DeviceMotion: braking, acceleration, cornering)
- *  ✅ Speeding alerts → safetyService → fleet dashboard
+ *  ✅ Speeding alerts → safetyService → command dashboard
  *  ✅ Apex Sentinel AI — live safety coaching + proactive alerts
  *  ✅ Apex RouteMind AI — route optimisation tips on destination set
  *  ✅ Fleet two-way chat (BroadcastChannel + localStorage persistence)
@@ -700,11 +700,11 @@ function LoginScreen({ profile, onLogin, onReset }) {
 
 
 // ══════════════════════════════════════════════════════════════
-//  MAIN DRIVER APP
+//  MAIN RESPONDER APP
 // ══════════════════════════════════════════════════════════════
 function DriverAppMain({ profile, onLogout }) {
 
-  // Fleet portal modal removed — driver app is fully isolated from fleet dashboard
+  // Fleet portal modal removed — responder app is fully isolated from command dashboard
 
   // ── Apex Command Center Bridge (additive — no existing logic changes) ─
   const apexBridgeRef = useRef(null)
@@ -1518,7 +1518,7 @@ function DriverAppMain({ profile, onLogout }) {
           role: 'assistant', module: 'routemind',
           text: `🧭 RouteMind: ${tip}`, ts: tsNow(),
         }])
-        // Push RouteMind insight to fleet dashboard
+        // Push RouteMind insight to command dashboard
         try {
           pushAIReportToFleet({
             driverId:    profile.id,
@@ -1555,7 +1555,7 @@ function DriverAppMain({ profile, onLogout }) {
       const res   = await aiRouter.routeModule('apex_sentinel', `${question}\n\nResponder context: ${ctx}`)
       const reply = res?.content || (typeof res === 'string' ? res : 'No response from Sentinel')
       setSentinelLog(prev => [...prev, { role: 'assistant', module: 'sentinel', text: reply, ts: tsNow() }])
-      // Push Sentinel report to fleet dashboard
+      // Push Sentinel report to command dashboard
       try {
         pushAIReportToFleet({
           driverId:    profile.id,

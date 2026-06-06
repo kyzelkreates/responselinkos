@@ -52,7 +52,7 @@ const writeJSON = (key, val) => {
 //   e = expiry (Unix seconds)
 //   k = { apiKeyName: value, ... }  (runtime keys to inject)
 //
-// Validation is LOCAL — the driver app decodes the token itself.
+// Validation is LOCAL — the responder app decodes the token itself.
 // No shared localStorage or server needed.
 // Fleet side also stores the record for tracking/revocation.
 //
@@ -75,7 +75,7 @@ const b64Decode = (str) => {
 /**
  * Build an APXS self-contained sync code.
  * Encodes driver identity + expiry + API keys into a base64url token.
- * Cross-device safe — driver app decodes locally, no shared storage needed.
+ * Cross-device safe — responder app decodes locally, no shared storage needed.
  */
 function buildToken(driverId, driverName, vehicleReg, ttlMinutes, apiKeys) {
   const payload = {
@@ -118,7 +118,7 @@ export function decodeToken(code) {
  * Also stores a record locally for tracking and revocation.
  */
 export function generateSyncCode(driverId = null, driverName = 'Driver', vehicleReg = '—', ttlMinutes = 60, apiKeys = null) {
-  // Collect runtime API keys from fleet dashboard localStorage
+  // Collect runtime API keys from command dashboard localStorage
   const runtimeKeys = apiKeys || {}
   if (!apiKeys) {
     const LS_MAP = {
@@ -176,7 +176,7 @@ export function revokeSyncCode(code) {
 }
 
 /**
- * Driver app: activate a sync code.
+ * Responder app: activate a sync code.
  * Decodes the self-contained APXS token — NO shared localStorage needed.
  * Works cross-device: the driver just needs the code string.
  */
@@ -247,7 +247,7 @@ export function activateSyncCode(code, driverProfile) {
 
 // ─── LOCATION / TELEMETRY PUSH (Driver → Fleet) ───────────────
 /**
- * Called by driver app every 5 seconds with fresh GPS data
+ * Called by responder app every 5 seconds with fresh GPS data
  */
 export function pushDriverLocation(driverId, vehicleId, locationData) {
   const payload = {
@@ -406,7 +406,7 @@ export function sendFleetAlert(driverId, alertText, severity = 'warning') {
 }
 
 /**
- * Driver app subscribes to fleet commands
+ * Responder app subscribes to fleet commands
  */
 export function subscribeToFleetCommands(driverId, callback) {
   const ch = getChannel()
@@ -496,14 +496,14 @@ export function subscribeToDriverEvents(callback) {
 
 
 /**
- * Driver app: read the stored sync pairing record (set after activateSyncCode)
+ * Responder app: read the stored sync pairing record (set after activateSyncCode)
  */
 export function getDriverSyncPairing() {
   return readJSON('apex:sync_pairing', null)
 }
 
 /**
- * Driver app: clear sync pairing (unpair from fleet)
+ * Responder app: clear sync pairing (unpair from fleet)
  */
 export function clearDriverSyncPairing() {
   try { localStorage.removeItem('apex:sync_pairing') } catch {}

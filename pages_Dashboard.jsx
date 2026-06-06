@@ -917,7 +917,7 @@ function DriverSyncSection({ drivers = [], vehicles = [] }) {
                   { label: 'Return to base',          type: 'alert',   text: 'Return to base immediately.' },
                   { label: 'Check in required',       type: 'message', text: 'Please check in — confirm your current status.' },
                   { label: 'Speed advisory',          type: 'alert',   text: 'Reduce speed — road conditions ahead.' },
-                  { label: 'Delivery confirmed',      type: 'message', text: '✓ Delivery confirmed by control. Proceed to next stop.' },
+                  { label: 'Visit confirmed',         type: 'message', text: '✓ Visit confirmed by coordinator. Proceed to next service user.' },
                 ].map(q => (
                   <button
                     key={q.label}

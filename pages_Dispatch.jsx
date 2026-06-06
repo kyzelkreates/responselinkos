@@ -544,7 +544,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
   const [form,   setForm]   = useState({
     title: '', priority: JOB_PRIORITY.NORMAL, notes: '',
     driver_id: '', vehicle_id: '', scheduled_at: '',
-    job_type: 'delivery',
+    job_type: 'welfare_check',
     pickup_address: '',
     special_instructions: '',
   })
@@ -685,12 +685,12 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
               <label className="text-xs text-slate-400 font-medium">Job Title <span className="text-red-400">*</span></label>
               <input className="apex-input w-full" value={form.title}
                 onChange={e => set('title', e.target.value)}
-                placeholder="e.g. Tesco Delivery — Manchester DC" />
+                placeholder="e.g. Welfare check — service user name or area" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs text-slate-400 font-medium">Job Type</label>
               <select className="apex-input w-full" value={form.job_type} onChange={e => set('job_type', e.target.value)}>
-                {['delivery','collection','transfer','multi-drop','return','service call'].map(t =>
+                {['welfare_check','outreach_visit','follow_up_visit','supply_run','safety_check','service_call'].map(t =>
                   <option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}
               </select>
             </div>
@@ -834,7 +834,7 @@ function JobModal({ onClose, onSaved, vehicles, drivers }) {
                           value={stop.address}
                           onChange={e => updateStop(stop.id, 'address', e.target.value)}
                           onBlur={() => stop.address.trim() && !stop.geocoded && geocodeStop(stop.id)}
-                          placeholder="Full delivery address" />
+                          placeholder="Full visit address" />
                         {stop.geocoding && (
                           <div className="absolute right-2 top-1/2 -translate-y-1/2">
                             <div className="w-3 h-3 border border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin" />

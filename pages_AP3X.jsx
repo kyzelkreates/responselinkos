@@ -323,7 +323,7 @@ export default function AP3X() {
                   : 'bg-slate-800/60 border border-slate-700 text-slate-400 hover:text-slate-300'
               }`}>
               <Icon name={gpsActive ? 'MapPin' : 'MapPinOff'} size={12} />
-              {gpsActive ? 'GPS On' : 'GPS Off'}
+              {gpsActive ? 'Location On' : 'Location Off'}
             </button>
           </div>
         </div>
@@ -462,7 +462,7 @@ export default function AP3X() {
       <div className="px-4 py-2 border-t border-slate-800/60 flex items-center gap-3 flex-shrink-0">
         <StatusDot status={gpsActive ? 'online' : 'idle'} />
         <span className="text-2xs text-slate-600">
-          {gpsActive ? 'Live GPS · sending telemetry to ResponseLink OS™' : 'GPS offline'}
+          {gpsActive ? 'Location active · sending data to ResponseLink OS™' : 'Location offline'}
         </span>
         {telemetry.lat && (
           <span className="ml-auto text-2xs text-slate-700 font-mono">

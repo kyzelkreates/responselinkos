@@ -317,7 +317,7 @@ export default function IntroPage() {
             <button onClick={() => goTo('/dashboard')}
               className="flex items-center gap-2 rounded-xl py-3.5 px-7 text-sm font-bold text-black shadow-lg transition-all hover:scale-[1.02] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-amber-300 w-full sm:w-auto"
               style={{ background: `linear-gradient(135deg,${GOLD},#E5C97E)` }}>
-              <Ico d={I.dashboard} size={16} color="#000" /> Open Control Dashboard
+              <Ico d={I.dashboard} size={16} color="#000" /> Open Command Dashboard
             </button>
             <button onClick={() => goTo('/responder-app')}
               className="flex items-center gap-2 rounded-xl py-3.5 px-7 text-sm font-semibold transition-all hover:bg-violet-500/10 focus:outline-none focus:ring-2 focus:ring-violet-400 w-full sm:w-auto"
@@ -729,9 +729,9 @@ export default function IntroPage() {
           <SectionHead title="Open the Demo" sub="Three interconnected interfaces — open any one to explore ResponseLink OS™ in Demo Mode." />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {[
-              { icon:'dashboard', color:GOLD,   route:'/dashboard',       title:'Control Dashboard',
+              { icon:'dashboard', color:GOLD,   route:'/dashboard',       title:'Command Dashboard',
                 desc:'Mission control, responder oversight, service user signals, incident reports, AI advisory flags, demo/live settings, sync visibility, and reports.',
-                btn:'Open Control Dashboard' },
+                btn:'Open Command Dashboard' },
               { icon:'phone',     color:PURPLE, route:'/responder-app',   title:'Responder PWA',
                 desc:'Field responder workflow for assigned missions, status updates, welfare checklists, incident notes, safety check-ins, and offline-safe submissions.',
                 btn:'Open Responder PWA' },
@@ -830,12 +830,12 @@ export default function IntroPage() {
         {/* ── FINAL CTA STRIP ──────────────────────────── */}
         <section className="px-5 sm:px-8 py-16 max-w-6xl mx-auto text-center border-t" style={{ borderColor: '#1a1a2a' }}>
           <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Ready to explore ResponseLink OS™?</h2>
-          <p className="text-sm text-slate-500 mb-8 max-w-xl mx-auto">Open the control dashboard to see the full command interface, or explore the field and service user PWAs.</p>
+          <p className="text-sm text-slate-500 mb-8 max-w-xl mx-auto">Open the Command Dashboard to see the full command interface, or explore the field and service user PWAs.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button onClick={() => goTo('/dashboard')}
               className="flex items-center gap-2 rounded-xl py-3.5 px-8 text-sm font-bold text-black shadow-lg transition-all hover:scale-[1.02] active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-amber-300 w-full sm:w-auto"
               style={{ background: `linear-gradient(135deg,${GOLD},#E5C97E)` }}>
-              <Ico d={I.dashboard} size={16} color="#000" /> Open Control Dashboard
+              <Ico d={I.dashboard} size={16} color="#000" /> Open Command Dashboard
               <Ico d={I.arrow} size={14} color="#000" />
             </button>
             <button onClick={onInstallClick}

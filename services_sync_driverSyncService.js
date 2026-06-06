@@ -1,7 +1,7 @@
 /**
  * ============================================================
  * ResponseLink OS™ — Responder Sync Service
- * Handles all Fleet ↔ Driver app communication methods:
+ * Handles all Command ↔ Responder app communication methods:
  *
  *  1. QR Code          — encode sync package as QR, driver scans
  *  2. Email            — mailto: with JSON attachment encoded in body
@@ -9,7 +9,7 @@
  *                        Nearby Share trigger this on Android/iOS)
  *  4. Bluetooth (BLE)  — Web Bluetooth API to write to a BLE characteristic
  *  5. Copy to clipboard — fallback for all platforms
- *  6. URL Deep Link    — #/driver-import?pkg=<base64> — opens in driver app
+ *  6. URL Deep Link    — #/driver-import?pkg=<base64> — opens in responder app
  *
  * JSON payload structure: see localDB.buildDriverSyncPackage()
  * ============================================================
@@ -197,7 +197,7 @@ export function importFromURL() {
 }
 
 // ─── Driver → Fleet telemetry push ───────────────────────────
-// Called from the AP3X driver app to push telemetry back.
+// Called from the AP3X responder app to push telemetry back.
 // Uses BroadcastChannel (same device) or stores locally for later sync.
 export function pushTelemetryToFleet(driverId, telemetry) {
   const pkg = buildTelemetryPackage(driverId, telemetry)
@@ -319,8 +319,8 @@ export function getDriverMessageHistory(limit = 80) {
 
 // ══════════════════════════════════════════════════════════════
 //  FLEET PAIRING CODE SYSTEM
-//  Fleet generates a 6-digit code → driver enters it in driver app
-//  No URL to the fleet dashboard is ever given to a driver
+//  Fleet generates a 6-digit code → driver enters it in responder app
+//  No URL to the command dashboard is ever given to a driver
 // ══════════════════════════════════════════════════════════════
 
 const CODE_KEY    = 'apex:fleet:pairing_codes'   // fleet side
@@ -376,7 +376,7 @@ export function validatePairingCode(code) {
   if (!DRIVER_CODE_REGEX.test(cleaned)) {
     return { ok: false, error: 'Invalid code format. Code must be APEX-XXXXXXXX-XXXX-DA' }
   }
-  // Same-device check (fleet dashboard open on same browser)
+  // Same-device check (command dashboard open on same browser)
   try {
     const all = JSON.parse(localStorage.getItem(CODE_KEY) || '[]')
     const entry = all.find(e => e.code === cleaned && e.expires > Date.now())
@@ -423,15 +423,15 @@ export function listenForPairingEvents(callback) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  DRIVER AI REPORT → FLEET DASHBOARD
-//  Driver app Sentinel/RouteMind AI results pushed to fleet
+//  RESPONDER AI REPORT → COMMAND DASHBOARD
+//  Responder app Sentinel/RouteMind AI results pushed to fleet
 // ══════════════════════════════════════════════════════════════
 
 const AI_REPORT_CHANNEL = 'apex:driver:ai_reports'
 const AI_REPORT_KEY     = 'apex:db:driver_ai_reports'
 
 /**
- * Driver app: push an AI report to the fleet dashboard.
+ * Responder app: push an AI report to the command dashboard.
  * @param {object} report - { driverId, driverName, vehicleReg, module, summary, fatigueScore, alertLevel, speed, sessionSecs }
  */
 export function pushAIReportToFleet(report) {
@@ -477,12 +477,12 @@ export function getDriverAIReportHistory(limit = 100) {
 // ══════════════════════════════════════════════════════════════
 //  ENHANCED PAIRING CODE TRANSFER METHODS
 //  All methods transfer the APEX-XXXXXXXX-XXXX-DA code to driver
-//  No fleet dashboard URL is ever included in these transfers
+//  No command dashboard URL is ever included in these transfers
 // ══════════════════════════════════════════════════════════════
 
 /**
  * Build a standardised pairing payload for all transfer methods.
- * Contains only the code + driver app URL — never fleet dashboard.
+ * Contains only the code + responder app URL — never command dashboard.
  */
 function buildCodePayload(code, driverName, vehicleReg) {
   const driverAppURL = `${window.location.origin}/#/responder-app`
@@ -498,7 +498,7 @@ function buildCodePayload(code, driverName, vehicleReg) {
 
 /**
  * WiFi Direct / AirDrop / Nearby Share via Web Share API.
- * Shares the pairing code as text — no URL to fleet dashboard.
+ * Shares the pairing code as text — no URL to command dashboard.
  * On Android: triggers Nearby Share. On iOS: triggers AirDrop.
  */
 export async function sendViaWiFiDirect(code, driverName, vehicleReg) {
@@ -562,11 +562,11 @@ export async function sendViaNFC(code, driverName, onStatus) {
 
 /**
  * Generate a QR code image URL for the pairing code.
- * QR encodes the full deep-link so scanning opens driver app with code pre-filled.
+ * QR encodes the full deep-link so scanning opens responder app with code pre-filled.
  * Uses api.qrserver.com (free, no API key, no signup).
  */
 export function getPairingCodeQR(code, size = 240) {
-  // Deep link: opens driver app and pre-fills the code
+  // Deep link: opens responder app and pre-fills the code
   const deepLink = `${window.location.origin}/#/responder-app?code=${encodeURIComponent(code)}`
   const encoded  = encodeURIComponent(deepLink)
   return {
@@ -601,7 +601,7 @@ export async function copyPairingCode(code) {
 
 /**
  * Send pairing code via email (mailto: link).
- * No fleet dashboard URL in the email — only driver app URL + code.
+ * No command dashboard URL in the email — only responder app URL + code.
  */
 export function sendPairingCodeEmail(code, driverName, vehicleReg, email = '') {
   const payload = buildCodePayload(code, driverName, vehicleReg)

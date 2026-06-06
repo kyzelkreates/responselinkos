@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * APEX FLEET CONTROL OS — Pairing Engine  (Stabilized)
+ * RESPONSELINK OS™ — Pairing Engine  (Stabilized)
  * services/federation/pairingEngine.js
  *
  * Single source of truth for all federation pairing state.

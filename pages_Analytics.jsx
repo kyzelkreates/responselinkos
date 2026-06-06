@@ -319,7 +319,7 @@ function OverviewTab({ timeSeries, period, vehicles, drivers, aiReports, alerts 
                     <YAxis yAxisId="left"  tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
                     <YAxis yAxisId="right" orientation="right" tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
                     <Tooltip content={<ApexTooltip />} />
-                    <Area yAxisId="left"  type="monotone" dataKey="trips"    name="trips"    stroke={C.cyan}   strokeWidth={2} fill="url(#gTrips)" dot={false} activeDot={{ r: 4 }} />
+                    <Area yAxisId="left"  type="monotone" dataKey="trips"    name="visits"    stroke={C.cyan}   strokeWidth={2} fill="url(#gTrips)" dot={false} activeDot={{ r: 4 }} />
                     <Area yAxisId="right" type="monotone" dataKey="distance" name="dist km"  stroke={C.violet} strokeWidth={2} fill="url(#gDist)"  dot={false} activeDot={{ r: 4 }} />
                   </AreaChart>
                 </ResponsiveContainer>

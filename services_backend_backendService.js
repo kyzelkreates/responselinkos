@@ -121,7 +121,7 @@ export async function probeConnection() {
 
 /**
  * Get a single profile by id.
- * Used by driver PWA to verify identity against Supabase.
+ * Used by responder PWA to verify identity against Supabase.
  */
 export async function getProfile(profileId) {
   if (!isLiveMode()) return null

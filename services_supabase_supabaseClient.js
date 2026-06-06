@@ -60,7 +60,7 @@ export function getSupabaseSettings() {
     }
   } catch {}
 
-  // Fallback to build-time env vars — works for Driver PWA on any device
+  // Fallback to build-time env vars — works for Responder PWA on any device
   // without the operator needing to configure Settings on that device.
   const envUrl = typeof import.meta !== 'undefined'
     ? (import.meta.env?.VITE_SUPABASE_URL || '')

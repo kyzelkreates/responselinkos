@@ -291,7 +291,7 @@ export async function markStopArrived(stopId) {
 }
 
 /**
- * Validate stop (system check passed — e.g. delivery confirmed).
+ * Validate stop (system check passed — e.g. visit confirmed).
  */
 export async function validateStop(stopId) {
   if (!isLiveMode()) return { ok: false }

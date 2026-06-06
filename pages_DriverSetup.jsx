@@ -630,7 +630,7 @@ export default function DriverSetup() {
               <div className="space-y-3">
                 {[
                   { icon: 'Lock', color: 'text-emerald-400', title: 'Secure isolation', desc: 'Responder app is completely separate from the command dashboard — responders see only navigation and their own data' },
-                  { icon: 'Gauge', color: 'text-cyan-400', title: 'Live telemetry', desc: 'GPS, speed, heading, and AI safety scores stream to command dashboard in real time' },
+                  { icon: 'Gauge', color: 'text-cyan-400', title: 'Live telemetry', desc: 'Location, activity, and AI safety data stream to the command dashboard in real time' },
                   { icon: 'BrainCircuit', color: 'text-violet-400', title: 'AI Sentinel onboard', desc: 'Fatigue detection, harsh event monitoring, and driving performance AI run locally on the responder device' },
                   { icon: 'MessageSquare', color: 'text-blue-400', title: 'Two-way messaging', desc: 'Command operators and responders can message each other directly through the paired channel' },
                   { icon: 'Navigation', color: 'text-amber-400', title: 'Smart navigation', desc: 'GraphHopper / Google Maps routing with AI-generated route guidance via Apex RouteMind' },
