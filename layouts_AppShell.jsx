@@ -47,8 +47,9 @@ export default function AppShell() {
 
       {/* Main content — always full width */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <TopNav />
-        <BackendWarningBanner />
+        {/* TopNav is hidden on the Intro (/) route — it has its own self-contained header */}
+        {location.pathname !== '/' && <TopNav />}
+        {location.pathname !== '/' && <BackendWarningBanner />}
         <main className="flex-1 overflow-auto scrollbar-none">
           <Outlet />
         </main>
