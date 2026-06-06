@@ -341,7 +341,7 @@ function SupabasePanel({ onSave }) {
           {!testResult.ok && (
             <p className="text-2xs text-slate-700 mt-1">
               Configuration saved locally. Real connection testing requires a valid Supabase project and anon key.
-              Backend features (real sync, auth, multi-device) are available in Run 10.
+              Backend features (real sync, auth, multi-device) are available via Supabase backend configuration.
             </p>
           )}
         </div>
@@ -383,12 +383,21 @@ function FutureProviderPanel({ name, fields, color = AMBER }) {
         ))}
       </div>
       <p className="text-2xs text-slate-700 px-2">
-        Run 10 — Full backend implementation. Fields above are planning placeholders only.
+        Backend implementation via Supabase is available now. Fields above are planning placeholders only.
         No data is submitted.
       </p>
     </div>
   )
 }
+
+
+// ─── Sync mode options ─────────────────────────────────────────
+const SYNC_MODES = [
+  { id: 'local_only',     label: 'Local Only',          sub: 'No backend — demo/offline use only', icon: 'HardDrive', color: '#A8A9AD' },
+  { id: 'manual',         label: 'Manual Sync',         sub: 'Sync on demand — no automatic push', icon: 'RefreshCw',  color: '#f59e0b' },
+  { id: 'near_realtime',  label: 'Near-Real-Time Sync', sub: 'Periodic sync every 30–60s',         icon: 'Clock',      color: '#06b6d4' },
+  { id: 'realtime',       label: 'Realtime Sync',       sub: 'Supabase Realtime — live streaming', icon: 'Zap',        color: '#22c55e' },
+]
 
 // ─── Main page ─────────────────────────────────────────────────
 export default function DemoLive() {
@@ -403,6 +412,10 @@ export default function DemoLive() {
   const [confirmReset, setConfirmReset]  = useState(false)
   const [activeTab,    setActiveTab]     = useState('mode')
   const [sbConfigured, setSbConfigured]  = useState(() => isSupabaseReady())
+  const [syncMode,       setSyncMode]     = useState(() => {
+    const s = appSettings.get()
+    return s.syncMode || 'local_only'
+  })
   const [selectedProvider, setProvider] = useState(() => {
     const cfg = getSupabaseSettings()
     return cfg.enabled ? 'supabase' : 'local'
@@ -464,6 +477,12 @@ export default function DemoLive() {
     finally { setBusy(false) }
   }
 
+  const handleSyncModeChange = (mode) => {
+    setSyncMode(mode)
+    appSettings.set({ syncMode: mode })
+    // Realtime only activates in Live Mode — guard in rlRealtimeService handles this
+  }
+
   const totalDemo = Object.values(counts).reduce((s, c) => s + (c.demo || 0), 0)
   const totalLive = Object.values(counts).reduce((s, c) => s + (c.live || 0), 0)
 
@@ -486,7 +505,7 @@ export default function DemoLive() {
           </div>
           <div>
             <h1 className="text-xl font-black text-white tracking-tight">Demo / Live Settings</h1>
-            <p className="text-2xs" style={{ color: GOLD }}>ResponseLink OS™ · Backend-Ready · Run 9</p>
+            <p className="text-2xs" style={{ color: GOLD }}>ResponseLink OS™ · Global Demo/Live Toggle · Run 14</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -547,6 +566,54 @@ export default function DemoLive() {
                 {busy ? 'Switching…' : demoMode ? 'Switch to Live Mode' : 'Switch to Demo Mode'}
               </button>
             </div>
+          </Card>
+
+
+          {/* ── Sync Mode selector ─────────────────────────── */}
+          <Card accent={CYAN}>
+            <SectionTitle icon="RefreshCw" title="Sync Mode"
+              sub="Controls how data syncs between devices and backend (Live Mode only)"
+              accent={CYAN} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {SYNC_MODES.map(m => {
+                const isActive = syncMode === m.id
+                const disabled = m.id !== 'local_only' && demoMode
+                return (
+                  <button key={m.id}
+                    onClick={() => !disabled && handleSyncModeChange(m.id)}
+                    className={`flex items-start gap-3 p-3 rounded-xl border text-left transition-all ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'}`}
+                    style={{
+                      background: isActive ? `${m.color}12` : '#0a050a',
+                      borderColor: isActive ? `${m.color}40` : '#ffffff10',
+                    }}>
+                    <Icon name={m.icon} size={15} style={{ color: isActive ? m.color : '#64748b', flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <div className="text-xs font-bold" style={{ color: isActive ? m.color : '#cbd5e1' }}>{m.label}</div>
+                      <div className="text-2xs text-slate-600">{m.sub}</div>
+                      {disabled && <div className="text-2xs text-amber-500/70 mt-0.5">Live Mode only</div>}
+                    </div>
+                    {isActive && (
+                      <div className="ml-auto">
+                        <div className="w-2 h-2 rounded-full" style={{ background: m.color }} />
+                      </div>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            {!demoMode && syncMode === 'realtime' && !sbConfigured && (
+              <div className="mt-3 rounded-xl border px-3 py-2.5"
+                   style={{ background: '#f59e0b08', borderColor: '#f59e0b25' }}>
+                <p className="text-2xs text-amber-300/70">
+                  ⚠ Realtime sync requires a configured Supabase backend. Configure in the Backend Setup tab.
+                </p>
+              </div>
+            )}
+            {demoMode && (
+              <p className="text-2xs text-slate-600 mt-2">
+                Sync mode is locked to Local Only in Demo Mode. Switch to Live Mode to enable backend sync.
+              </p>
+            )}
           </Card>
 
           {/* Live mode warning */}

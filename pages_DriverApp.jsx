@@ -68,6 +68,8 @@ import InterruptionModal   from './modules_execution_InterruptionModal'
 import { recoverOfflineTasks, onConnectionStatus, getConnectionStatus } from './services_backend_backendService'
 import { pwaJobSync, PWA_JOB_STATUS } from './services_pwa_jobSyncService'
 import { getSupabaseSettings } from './services_supabase_supabaseClient'
+import { getDemoMode } from './core_rlData'
+import LiveModeStatusPanel from './components_ui_LiveModeStatusPanel'
 import { DriverConnectionRow } from './components_ui_ConnectionStatus'
 
 
@@ -766,6 +768,14 @@ function DriverAppMain({ profile, onLogout }) {
 
   // ── UI tabs ───────────────────────────────────────────────────
   const [tab, setTab] = useState('map') // 'map'|'safety'|'chat'|'jobs'
+  const [isDemo,   setIsDemo]   = useState(() => getDemoMode())
+  // Re-check demo mode on focus (user may toggle in another tab)
+  useEffect(() => {
+    const check = () => setIsDemo(getDemoMode())
+    window.addEventListener('focus', check)
+    window.addEventListener('storage', check)
+    return () => { window.removeEventListener('focus', check); window.removeEventListener('storage', check) }
+  }, [])
   const [safetyScreen, setSafetyScreen] = useState('hub') // 'hub'|'dashcam'|'hazards'|'incidents'|'playback'|'export'
 
   // ── Chat state ───────────────────────────────────────────────
@@ -1877,6 +1887,13 @@ function DriverAppMain({ profile, onLogout }) {
           gpsState === 'denied' ? 'bg-red-400' : 'bg-amber-400'
         }`} />
 
+        {/* Demo / Live mode pill */}
+        <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border text-2xs font-bold flex-shrink-0"
+             style={{ background: isDemo ? '#22c55e12' : '#a855f712', borderColor: isDemo ? '#22c55e30' : '#a855f730', color: isDemo ? '#22c55e' : '#a855f7' }}>
+          <div className="w-1 h-1 rounded-full" style={{ background: isDemo ? '#22c55e' : '#a855f7' }} />
+          {isDemo ? 'Demo' : 'Live'}
+        </div>
+
         {/* Fleet pairing status indicator — read-only, no navigation to fleet */}
         {(() => {
           let paired = false
@@ -2424,6 +2441,8 @@ function DriverAppMain({ profile, onLogout }) {
       {/* ══════════ JOBS TAB ══════════ */}
       {tab === 'jobs' && (
         <div className="flex-1 overflow-y-auto scrollbar-none p-4 space-y-3">
+        {/* Demo/Live status — jobs tab */}
+        <LiveModeStatusPanel variant="responder" compact={true} />
 
           {/* Fleet sync status banner */}
           {(() => {

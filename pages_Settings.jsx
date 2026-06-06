@@ -29,6 +29,7 @@ import {
   loadRoutingConstraints, saveRoutingConstraints, getLocalRoutingConstraints,
 } from './services_settings_appSettingsService'
 import { ROUTES } from './config_routes'
+import { getDemoMode, getLiveModeStatus } from './core_rlData'
 import {
   getSupabaseSettings, saveSupabaseSettings, testSupabaseConnection, destroySupabaseClient,
 } from './services_supabase_supabaseClient'
@@ -44,6 +45,7 @@ const TABS = [
   { key: 'integrations', label: 'Integrations',  icon: 'Plug' },
   { key: 'federation',   label: 'Federation',    icon: 'Globe2' },
   { key: 'backend',      label: 'Backend',       icon: 'Database' },
+  { key: 'demolive',     label: 'Demo / Live',   icon: 'ToggleLeft' },
 ]
 
 // ─── Setting Row ──────────────────────────────────────────────
@@ -1388,6 +1390,107 @@ function FederationPanel() {
   )
 }
 
+
+// ─── Demo / Live Mode Panel (Settings) ────────────────────────
+function DemoLiveModePanel() {
+  const navigate = useNavigate()
+  const [isDemo,  setIsDemo]  = useState(() => getDemoMode())
+  const [status,  setStatus]  = useState(() => getLiveModeStatus())
+
+  useEffect(() => {
+    const check = () => {
+      setIsDemo(getDemoMode())
+      setStatus(getLiveModeStatus())
+    }
+    window.addEventListener('focus', check)
+    window.addEventListener('storage', check)
+    return () => { window.removeEventListener('focus', check); window.removeEventListener('storage', check) }
+  }, [])
+
+  const GREEN  = '#22c55e'
+  const PURPLE = '#a855f7'
+  const AMBER  = '#f59e0b'
+  const modeColor = isDemo ? GREEN : PURPLE
+
+  return (
+    <div className="space-y-0">
+      <div className="flex items-center gap-3 pb-5 border-b border-slate-800/40">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+             style={{ background: `${modeColor}15`, border: `1px solid ${modeColor}30` }}>
+          <Icon name={isDemo ? 'PlayCircle' : 'Zap'} size={18} style={{ color: modeColor }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold" style={{ color: modeColor }}>
+            {isDemo ? 'Demo Mode Active' : 'Live Mode Active'}
+          </div>
+          <div className="text-xs text-slate-500 mt-0.5">
+            {isDemo
+              ? 'The platform is running with sample welfare data. No backend required.'
+              : 'The platform is in Live Mode. Backend configuration required for real data.'}
+          </div>
+        </div>
+        <span className="text-xs px-2.5 py-1 rounded-full font-bold border flex-shrink-0"
+              style={{ background: `${modeColor}15`, color: modeColor, borderColor: `${modeColor}30` }}>
+          {isDemo ? '🟢 Demo' : '🟣 Live'}
+        </span>
+      </div>
+
+      <div className="py-4 space-y-3">
+        <div className="text-xs text-slate-500 leading-relaxed">
+          <strong className="text-slate-300">Demo Mode</strong> — uses sample welfare missions, responders, service users,
+          check-ins, help signals, incidents, and reports so the platform can be explored safely without a backend.
+        </div>
+        <div className="text-xs text-slate-500 leading-relaxed">
+          <strong className="text-slate-300">Live Mode</strong> — hides demo records and connects ResponseLink OS™ to Supabase
+          for real users, authentication, persistent records, realtime dashboards, responder updates, service user check-ins,
+          evidence records, and sync.
+        </div>
+        <div className="text-xs font-semibold text-slate-600 italic">
+          "Demo Mode shows the product. Live Mode runs the product."
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 py-3 border-t border-slate-800/40">
+        {[
+          { label: 'Current Mode',     value: isDemo ? 'Demo Mode' : 'Live Mode',          color: modeColor },
+          { label: 'Backend',          value: status.backendConfigured ? 'Configured' : 'Not configured', color: status.backendConfigured ? GREEN : AMBER },
+          { label: 'Realtime',         value: !isDemo && status.backendConfigured ? 'Active in Live Mode' : (isDemo ? 'Disabled in Demo Mode' : 'Pending backend'), color: !isDemo && status.backendConfigured ? GREEN : AMBER },
+          { label: 'Auth',             value: isDemo ? 'Not required (Demo Mode)' : 'Required for Live Mode', color: isDemo ? GREEN : AMBER },
+        ].map(k => (
+          <div key={k.label} className="rounded-xl border px-3 py-2.5"
+               style={{ background: `${k.color}06`, borderColor: `${k.color}18` }}>
+            <div className="text-2xs text-slate-600">{k.label}</div>
+            <div className="text-xs font-bold mt-0.5" style={{ color: k.color }}>{k.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pt-4 border-t border-slate-800/40">
+        <button
+          onClick={() => navigate('/demo-live')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold w-full justify-center"
+          style={{ background: `${PURPLE}15`, color: PURPLE, border: `1px solid ${PURPLE}25` }}>
+          <Icon name="Settings2" size={14} />
+          Open Demo / Live Settings &amp; Backend Configuration
+        </button>
+        <p className="text-2xs text-slate-700 text-center mt-2">
+          Toggle demo/live mode, configure Supabase, test connection, manage providers
+        </p>
+      </div>
+
+      <div className="pt-4 rounded-xl border px-4 py-3 mt-4 flex items-start gap-2"
+           style={{ background: '#f59e0b06', borderColor: '#f59e0b20' }}>
+        <Icon name="ShieldAlert" size={12} style={{ color: '#f59e0b', flexShrink: 0, marginTop: 1 }} />
+        <p className="text-2xs leading-relaxed text-amber-200/60">
+          ResponseLink OS™ is advisory and coordination-support software.
+          It does not replace emergency services, safeguarding professionals,
+          clinical judgement, or legal duties. If there is immediate danger, contact emergency services.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function BackendPanel() {
   const stored = getSupabaseSettings()
   const [url,        setUrl]        = useState(stored.url || '')
@@ -1527,14 +1630,23 @@ function BackendPanel() {
         <input
           type={showKey ? 'text' : 'password'}
           value={anonKey}
-          onChange={e => setAnonKey(e.target.value)}
+          onChange={e => {
+            const v = e.target.value
+            const blocked = ['service_role','SERVICE_ROLE','jwt_secret','JWT_SECRET','PRIVATE_KEY','private_key','admin_token','ADMIN_TOKEN','database_url','DATABASE_URL','openai_api_key','GROQ_API_KEY','stripe_secret'].some(b => v.toLowerCase().includes(b.toLowerCase()))
+            if (blocked) {
+              alert('⛔ 4P3X API Config Guard™: This appears to be a backend-only secret. Do not place this key in frontend code. Use only public/client-safe anon keys here.')
+              return
+            }
+            setAnonKey(v)
+          }}
           placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
           className="apex-input w-full font-mono text-xs"
           autoComplete="new-password"
           spellCheck={false}
         />
         <p className="text-2xs text-slate-600">
-          Found in: Supabase Dashboard → Project Settings → API → Project API keys (anon public)
+          Anon/public key only. Found in: Supabase Dashboard → Settings → API → anon key.
+          Never use service_role key here — that is a backend-only secret.
         </p>
       </div>
 
@@ -1564,7 +1676,7 @@ function BackendPanel() {
       <SectionHead label="Database Schema" />
       <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/60 text-xs text-slate-500 font-mono space-y-1">
         <div className="text-slate-400 font-semibold mb-1.5">Required tables:</div>
-        {['drivers', 'tasks', 'fleet_nodes', 'dashboard_events', 'settings'].map(t => (
+        {['missions', 'responders', 'service_users', 'check_ins', 'help_signals', 'incidents', 'evidence_items', 'escalation_events', 'reports'].map(t => (
           <div key={t} className="flex items-center gap-2">
             <Icon name="Table2" size={10} className="text-slate-600" />
             <span>{t}</span>
@@ -1589,6 +1701,7 @@ export default function Settings() {
     integrations: <IntegrationsPanel />,
     federation:   <FederationPanel />,
     backend:      <BackendPanel />,
+    demolive:    <DemoLiveModePanel />,
   }
 
   return (
