@@ -31,6 +31,7 @@ import { getDemoMode, getLiveModeStatus } from './core_rlData'
 import { getSupabaseSettings } from './services_supabase_supabaseClient'
 import { useNavigate } from 'react-router-dom'
 import { ROUTES } from './config_routes'
+import { useRLAuth } from './hooks_useRLAuth'
 
 // ─── Colour tokens ────────────────────────────────────────────
 const GOLD   = '#C9A84C'
@@ -109,6 +110,7 @@ export default function LiveModeStatusPanel({ variant = 'dashboard', compact = f
   const [online,   setOnline]   = useState(navigator.onLine)
 
   const cfg = VARIANT_CONFIG[variant] || VARIANT_CONFIG.dashboard
+  const { isAuthenticated, isDemo: authIsDemo, roleLabel, noBackend, isLoading: authLoading } = useRLAuth()
 
   useEffect(() => {
     function refresh() {
@@ -173,6 +175,14 @@ export default function LiveModeStatusPanel({ variant = 'dashboard', compact = f
             </>
           )}
         </div>
+        {!isDemo && (
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: isAuthenticated ? GREEN : RED }} />
+            <span className="text-2xs" style={{ color: isAuthenticated ? GREEN : RED }}>
+              {authLoading ? '…' : isAuthenticated ? (roleLabel || 'Auth') : 'Not signed in'}
+            </span>
+          </div>
+        )}
         <button
           onClick={() => navigate(cfg.configPath)}
           className="text-2xs font-semibold flex-shrink-0"
@@ -226,6 +236,11 @@ export default function LiveModeStatusPanel({ variant = 'dashboard', compact = f
           value={connLabel}
           color={connColor}
           icon={connIcon} />
+        <StatusRow
+          label="Auth status"
+          value={isDemo ? 'Demo (no login required)' : (authLoading ? 'Checking…' : (isAuthenticated ? `Signed in${roleLabel ? ' · ' + roleLabel : ''}` : 'Not signed in'))}
+          color={isDemo ? GREEN : (isAuthenticated ? GREEN : (noBackend ? AMBER : RED))}
+          icon={isDemo ? 'CheckCircle2' : (isAuthenticated ? 'UserCheck' : 'UserX')} />
         <StatusRow
           label={cfg.syncLabel}
           value={syncLabel}

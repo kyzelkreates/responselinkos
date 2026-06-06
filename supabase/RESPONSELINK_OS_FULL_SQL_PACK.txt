@@ -1,0 +1,2545 @@
+================================================================
+RESPONSELINK OS™ — FULL SUPABASE SQL SETUP PACK
+ResponseLink OS™
+AI-Assisted Community Welfare & Mobile Response Platform
+Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+
+Run 11 — Complete Backend SQL + RLS + Realtime + Storage
+
+================================================================
+⚠ EXECUTION ORDER — RUN IN THIS ORDER IN SUPABASE SQL EDITOR:
+  PART 1: schema.sql       — Tables, indexes, functions, triggers
+  PART 2: rls-policies.sql — Enable RLS + all access policies
+  PART 3: realtime.sql     — Realtime publication setup
+  PART 4: storage.sql      — Storage buckets + storage policies
+================================================================
+⚠ SAFETY RULES:
+  - NEVER place SUPABASE_SERVICE_ROLE_KEY in frontend code
+  - Only VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY in frontend
+  - RLS is ENABLED for ALL private production tables
+  - All escalations require HUMAN SUPERVISOR review
+  - AI reviews are ADVISORY ONLY — not clinical decisions
+================================================================
+⚠ EXECUTION STATUS:
+  SQL PREPARED BUT NOT EXECUTED.
+  Copy each PART below → paste into Supabase SQL Editor → Run.
+  Wait for each PART to complete before running the next.
+================================================================
+
+
+================================================================
+PART 1 OF 4 — SCHEMA
+RUN THIS FIRST in Supabase SQL Editor
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Supabase Schema
+-- supabase/schema.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ EXECUTION ORDER:
+--   1. supabase/schema.sql          ← THIS FILE
+--   2. supabase/rls-policies.sql
+--   3. supabase/realtime.sql
+--   4. supabase/storage.sql
+--
+-- ⚠ SAFETY RULES:
+--   - RLS MUST BE ENABLED for all private production tables.
+--   - NEVER place SUPABASE_SERVICE_ROLE_KEY in frontend code.
+--   - Only VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY in frontend.
+--   - Review RLS policies before going live with real welfare data.
+--
+-- ⚠ ADVISORY NOTICE:
+--   ResponseLink OS™ is advisory and coordination-support software.
+--   It does not replace emergency services, safeguarding professionals,
+--   clinical judgement, or legal duties.
+--   Escalations MUST be reviewed by a human supervisor before action.
+--
+-- ⚠ EXECUTION STATUS:
+--   SQL setup pack PREPARED but NOT EXECUTED.
+--   Run in Supabase SQL Editor in the documented order.
+-- ============================================================
+
+
+-- ============================================================
+-- 1. EXTENSIONS
+-- ============================================================
+
+create extension if not exists "uuid-ossp";
+create extension if not exists "pg_trgm";
+create extension if not exists "btree_gin";
+
+
+-- ============================================================
+-- 2. ENUMS
+-- ============================================================
+
+-- Organisation types
+do $$ begin
+  create type org_type_enum as enum (
+    'charity', 'council', 'ngo', 'care_provider',
+    'housing', 'health', 'education', 'community_group', 'other'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Organisation member roles
+do $$ begin
+  create type member_role_enum as enum (
+    'owner', 'admin', 'coordinator', 'supervisor',
+    'responder', 'service_user', 'viewer'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Membership/record status
+do $$ begin
+  create type status_enum as enum (
+    'active', 'inactive', 'archived', 'pending', 'suspended'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Mission status — strict workflow order
+do $$ begin
+  create type mission_status_enum as enum (
+    'draft', 'scheduled', 'assigned', 'travelling',
+    'arrived', 'in_progress', 'check_in_due', 'overdue',
+    'escalating', 'completed', 'cancelled',
+    'needs_supervisor_review'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Mission types
+do $$ begin
+  create type mission_type_enum as enum (
+    'welfare_check', 'outreach_visit', 'supply_delivery',
+    'follow_up_visit', 'safety_check', 'incident_response',
+    'volunteer_task', 'vulnerable_person_support',
+    'community_support_assignment'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Risk levels
+do $$ begin
+  create type risk_level_enum as enum ('low', 'medium', 'high', 'critical');
+exception when duplicate_object then null; end $$;
+
+-- Responder availability status
+do $$ begin
+  create type responder_status_enum as enum (
+    'available', 'assigned', 'travelling', 'arrived',
+    'active_visit', 'check_in_due', 'overdue', 'escalating',
+    'completed', 'offline', 'needs_supervisor_review'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Service user status
+do $$ begin
+  create type su_status_enum as enum (
+    'stable', 'check_in_received', 'support_requested',
+    'missed_check_in', 'visit_confirmed', 'visit_declined',
+    'wellbeing_concern', 'safety_concern', 'urgent_help_requested',
+    'offline', 'needs_follow_up', 'needs_supervisor_review'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Incident severity
+do $$ begin
+  create type severity_enum as enum ('low', 'medium', 'high', 'critical');
+exception when duplicate_object then null; end $$;
+
+-- Sync queue action types
+do $$ begin
+  create type sync_action_enum as enum (
+    'create', 'update', 'delete',
+    'status_change', 'check_in', 'help_signal',
+    'incident_report', 'evidence_upload', 'escalation'
+  );
+exception when duplicate_object then null; end $$;
+
+-- Sync status
+do $$ begin
+  create type sync_status_enum as enum (
+    'pending', 'synced', 'failed', 'conflict',
+    'needs_retry', 'supervisor_review_required'
+  );
+exception when duplicate_object then null; end $$;
+
+
+-- ============================================================
+-- 3. TABLES
+-- ============================================================
+
+-- ── 3.1 organisations ────────────────────────────────────────
+-- RLS: ENABLED (see rls-policies.sql)
+-- Purpose: Top-level tenant — charity, council, outreach team, care provider
+create table if not exists public.organisations (
+  id               uuid        primary key default gen_random_uuid(),
+  name             text        not null,
+  type             org_type_enum not null default 'charity',
+  description      text,
+  contact_email    text,
+  contact_phone    text,
+  website          text,
+  address          text,
+  postcode         text,
+  country          text        default 'GB',
+  logo_url         text,
+  status           status_enum not null default 'active',
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  created_by       uuid        references auth.users(id) on delete set null,
+  demo_record      boolean     not null default false
+);
+comment on table public.organisations is
+  'Top-level tenant organisations. All operational data is scoped to an org. RLS: ENABLED.';
+
+-- ── 3.2 profiles ─────────────────────────────────────────────
+-- RLS: ENABLED (see rls-policies.sql)
+-- Purpose: App profile linked to Supabase auth.users
+-- Supabase Auth creates the auth.users record; this table extends it.
+create table if not exists public.profiles (
+  id               uuid        primary key references auth.users(id) on delete cascade,
+  full_name        text,
+  avatar_url       text,
+  phone            text,
+  timezone         text        default 'Europe/London',
+  notification_prefs jsonb     not null default '{}'::jsonb,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+comment on table public.profiles is
+  'App profiles linked to Supabase auth.users. One profile per auth user. RLS: ENABLED.';
+
+-- ── 3.3 organisation_members ──────────────────────────────────
+-- RLS: ENABLED (see rls-policies.sql)
+-- Purpose: Links users to organisations with a specific role.
+-- A user may belong to multiple organisations.
+create table if not exists public.organisation_members (
+  id               uuid            primary key default gen_random_uuid(),
+  organisation_id  uuid            not null references public.organisations(id) on delete cascade,
+  user_id          uuid            not null references auth.users(id) on delete cascade,
+  role             member_role_enum not null default 'viewer',
+  status           status_enum     not null default 'active',
+  invited_at       timestamptz,
+  accepted_at      timestamptz,
+  invited_by       uuid            references auth.users(id) on delete set null,
+  metadata         jsonb           not null default '{}'::jsonb,
+  created_at       timestamptz     not null default now(),
+  updated_at       timestamptz     not null default now(),
+  unique (organisation_id, user_id)
+);
+comment on table public.organisation_members is
+  'Organisation membership and roles. Controls access and permissions via RLS. RLS: ENABLED.';
+
+-- ── 3.4 service_users ─────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: People receiving welfare visits, outreach, or support
+create table if not exists public.service_users (
+  id               uuid          primary key default gen_random_uuid(),
+  organisation_id  uuid          not null references public.organisations(id) on delete cascade,
+  auth_user_id     uuid          references auth.users(id) on delete set null,  -- if they have an app account
+  full_name        text          not null,
+  preferred_name   text,
+  reference        text,          -- internal reference number
+  risk_level       risk_level_enum not null default 'low',
+  status           su_status_enum  not null default 'stable',
+  date_of_birth    date,
+  phone            text,
+  email            text,
+  address          text,
+  postcode         text,
+  notes            text,          -- internal coordinator notes (never shown in service user PWA)
+  last_seen_at     timestamptz,
+  metadata         jsonb         not null default '{}'::jsonb,
+  created_at       timestamptz   not null default now(),
+  updated_at       timestamptz   not null default now(),
+  created_by       uuid          references auth.users(id) on delete set null,
+  updated_by       uuid          references auth.users(id) on delete set null,
+  demo_record      boolean       not null default false
+);
+comment on table public.service_users is
+  'People receiving welfare support. Staff notes never shown to service users. RLS: ENABLED.';
+
+-- ── 3.5 responders ────────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Field responders — outreach workers, support staff
+create table if not exists public.responders (
+  id               uuid               primary key default gen_random_uuid(),
+  organisation_id  uuid               not null references public.organisations(id) on delete cascade,
+  user_id          uuid               references auth.users(id) on delete set null,
+  full_name        text               not null,
+  phone            text,
+  email            text,
+  status           responder_status_enum not null default 'available',
+  current_location jsonb,             -- { lat, lng, timestamp } — not persisted long-term
+  current_mission_id uuid,            -- denormalised shortcut
+  last_seen_at     timestamptz,
+  metadata         jsonb              not null default '{}'::jsonb,
+  created_at       timestamptz        not null default now(),
+  updated_at       timestamptz        not null default now(),
+  created_by       uuid               references auth.users(id) on delete set null,
+  updated_by       uuid               references auth.users(id) on delete set null,
+  demo_record      boolean            not null default false
+);
+comment on table public.responders is
+  'Field responders linked to auth accounts and organisations. RLS: ENABLED.';
+
+-- ── 3.6 missions ──────────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Welfare missions, outreach tasks, support visits
+-- Status flow: assigned → travelling → arrived → in_progress → completed
+create table if not exists public.missions (
+  id               uuid               primary key default gen_random_uuid(),
+  organisation_id  uuid               not null references public.organisations(id) on delete cascade,
+  title            text               not null,
+  type             mission_type_enum  not null default 'welfare_check',
+  status           mission_status_enum not null default 'assigned',
+  risk_level       risk_level_enum    not null default 'low',
+  priority         text               not null default 'standard',  -- low | standard | high | urgent
+  service_user_id  uuid               references public.service_users(id) on delete set null,
+  assigned_to      uuid               references public.responders(id) on delete set null,
+  location         jsonb,             -- { address, lat, lng }
+  notes            text,
+  supervisor_notes text,              -- coordinator/supervisor notes — not shown in Responder PWA by default
+  scheduled_at     timestamptz,
+  started_at       timestamptz,
+  completed_at     timestamptz,
+  metadata         jsonb              not null default '{}'::jsonb,
+  created_at       timestamptz        not null default now(),
+  updated_at       timestamptz        not null default now(),
+  created_by       uuid               references auth.users(id) on delete set null,
+  updated_by       uuid               references auth.users(id) on delete set null,
+  demo_record      boolean            not null default false
+);
+comment on table public.missions is
+  'Welfare missions and field tasks. Status flow: assigned→travelling→arrived→in_progress→completed. RLS: ENABLED.';
+
+-- ── 3.7 mission_assignments ───────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Assignment history — supports reassignment tracking
+create table if not exists public.mission_assignments (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  mission_id       uuid        not null references public.missions(id) on delete cascade,
+  responder_id     uuid        not null references public.responders(id) on delete cascade,
+  assigned_at      timestamptz not null default now(),
+  unassigned_at    timestamptz,
+  status           text        not null default 'active',  -- active | completed | unassigned
+  assigned_by      uuid        references auth.users(id) on delete set null,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  demo_record      boolean     not null default false
+);
+comment on table public.mission_assignments is
+  'Assignment history for missions. Tracks responder changes. RLS: ENABLED.';
+
+-- ── 3.8 responder_status ──────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Current responder availability and field status (realtime target)
+create table if not exists public.responder_status (
+  id               uuid                  primary key default gen_random_uuid(),
+  organisation_id  uuid                  not null references public.organisations(id) on delete cascade,
+  responder_id     uuid                  not null references public.responders(id) on delete cascade,
+  status           responder_status_enum not null default 'available',
+  mission_id       uuid                  references public.missions(id) on delete set null,
+  location         jsonb,
+  battery_pct      smallint,
+  last_check_in_at timestamptz,
+  next_check_in_at timestamptz,
+  metadata         jsonb                 not null default '{}'::jsonb,
+  updated_at       timestamptz           not null default now(),
+  unique (responder_id)
+);
+comment on table public.responder_status is
+  'Current responder field status. One row per responder. Realtime enabled. RLS: ENABLED.';
+
+-- ── 3.9 service_user_status ───────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Current service user check-in/welfare status (realtime target)
+create table if not exists public.service_user_status (
+  id               uuid          primary key default gen_random_uuid(),
+  organisation_id  uuid          not null references public.organisations(id) on delete cascade,
+  service_user_id  uuid          not null references public.service_users(id) on delete cascade,
+  status           su_status_enum not null default 'stable',
+  last_check_in_at timestamptz,
+  next_check_in_at timestamptz,
+  open_help_signals smallint      not null default 0,
+  metadata         jsonb         not null default '{}'::jsonb,
+  updated_at       timestamptz   not null default now(),
+  unique (service_user_id)
+);
+comment on table public.service_user_status is
+  'Current service user welfare status. One row per service user. Realtime enabled. RLS: ENABLED.';
+
+-- ── 3.10 check_ins ────────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Responder and service user check-ins
+create table if not exists public.check_ins (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  type             text        not null default 'standard',  -- standard | welfare | safety | escalation
+  responder_id     uuid        references public.responders(id) on delete set null,
+  service_user_id  uuid        references public.service_users(id) on delete set null,
+  mission_id       uuid        references public.missions(id) on delete set null,
+  status           text        not null default 'ok',  -- ok | concern | escalated | overdue
+  notes            text,
+  location         jsonb,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  created_by       uuid        references auth.users(id) on delete set null,
+  demo_record      boolean     not null default false
+);
+comment on table public.check_ins is
+  'Responder and service user check-ins. Linked to missions and org. RLS: ENABLED.';
+
+-- ── 3.11 help_signals ─────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Service user help requests / support signals
+create table if not exists public.help_signals (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  service_user_id  uuid        not null references public.service_users(id) on delete cascade,
+  type             text        not null default 'check_in',  -- check_in | help_request | emergency | wellbeing
+  urgency          text        not null default 'low',        -- low | medium | high | urgent
+  status           text        not null default 'pending',    -- pending | acknowledged | resolved | escalated
+  notes            text,
+  reviewed_by      uuid        references auth.users(id) on delete set null,
+  reviewed_at      timestamptz,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  created_by       uuid        references auth.users(id) on delete set null,
+  demo_record      boolean     not null default false
+);
+comment on table public.help_signals is
+  'Service user help requests. Reviewed by human coordinator — NO automatic action. RLS: ENABLED.';
+
+-- ── 3.12 incidents ────────────────────────────────────────────
+-- RLS: ENABLED
+create table if not exists public.incidents (
+  id               uuid          primary key default gen_random_uuid(),
+  organisation_id  uuid          not null references public.organisations(id) on delete cascade,
+  mission_id       uuid          references public.missions(id) on delete set null,
+  responder_id     uuid          references public.responders(id) on delete set null,
+  service_user_id  uuid          references public.service_users(id) on delete set null,
+  type             text          not null default 'welfare_concern',
+  severity         severity_enum not null default 'medium',
+  status           text          not null default 'open',  -- open | under_review | resolved | closed
+  title            text,
+  description      text,
+  location         jsonb,
+  metadata         jsonb         not null default '{}'::jsonb,
+  created_at       timestamptz   not null default now(),
+  updated_at       timestamptz   not null default now(),
+  created_by       uuid          references auth.users(id) on delete set null,
+  updated_by       uuid          references auth.users(id) on delete set null,
+  demo_record      boolean       not null default false
+);
+comment on table public.incidents is
+  'Incident reports. Human review required before any action. RLS: ENABLED.';
+
+-- ── 3.13 evidence_items ───────────────────────────────────────
+-- RLS: ENABLED
+create table if not exists public.evidence_items (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  incident_id      uuid        references public.incidents(id) on delete set null,
+  mission_id       uuid        references public.missions(id) on delete set null,
+  type             text        not null default 'note',  -- note | photo | audio | file | form | observation
+  title            text,
+  description      text,
+  notes            text,
+  file_url         text,        -- Supabase Storage URL (private bucket)
+  file_path        text,        -- Storage path for signed URL generation
+  file_size_bytes  bigint,
+  mime_type        text,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  created_by       uuid        references auth.users(id) on delete set null,
+  demo_record      boolean     not null default false
+);
+comment on table public.evidence_items is
+  'Evidence records for incidents and missions. Files in private Supabase Storage. RLS: ENABLED.';
+
+-- ── 3.14 escalation_events ────────────────────────────────────
+-- RLS: ENABLED
+-- ⚠ AI is ADVISORY ONLY. Human supervisor MUST review before any action.
+create table if not exists public.escalation_events (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  mission_id       uuid        references public.missions(id) on delete set null,
+  incident_id      uuid        references public.incidents(id) on delete set null,
+  raised_by        uuid        references auth.users(id) on delete set null,
+  reviewed_by      uuid        references auth.users(id) on delete set null,
+  reason           text,
+  ai_summary       text,        -- 4P3X advisory note only — NOT a decision
+  status           text        not null default 'pending_review',
+  -- Statuses: pending_review | under_review | actioned | closed | dismissed
+  -- ⚠ 'pending_review' = human supervisor has NOT yet reviewed.
+  -- ⚠ Automatic escalation actions are NOT permitted.
+  reviewed_at      timestamptz,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  demo_record      boolean     not null default false
+);
+comment on table public.escalation_events is
+  'Escalation workflow events. AI advisory only. HUMAN REVIEW REQUIRED before any action. RLS: ENABLED.';
+
+-- ── 3.15 ai_reviews ───────────────────────────────────────────
+-- RLS: ENABLED
+-- ⚠ AI assessments are advisory only. Not clinical, legal, or certain.
+create table if not exists public.ai_reviews (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  entity_type      text,        -- mission | incident | responder | service_user
+  entity_id        uuid,
+  review_type      text,        -- risk | welfare | compliance | safety
+  summary          text,
+  risk_level       risk_level_enum,
+  confidence       text,        -- advisory only — not clinical/legal certainty
+  reviewed_by      uuid        references auth.users(id) on delete set null,
+  reviewed_at      timestamptz,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  demo_record      boolean     not null default false
+);
+comment on table public.ai_reviews is
+  '4P3X advisory AI assessments. NOT clinical decisions. Human review required. RLS: ENABLED.';
+
+-- ── 3.16 reports ──────────────────────────────────────────────
+-- RLS: ENABLED
+create table if not exists public.reports (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  type             text        not null default 'welfare',  -- welfare | incident | compliance | summary
+  title            text,
+  period           text,
+  status           text        not null default 'draft',  -- draft | submitted | approved | archived
+  content          jsonb       not null default '{}'::jsonb,
+  file_path        text,        -- Storage path if exported to file
+  generated_by     uuid        references auth.users(id) on delete set null,
+  reviewed_by      uuid        references auth.users(id) on delete set null,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  demo_record      boolean     not null default false
+);
+comment on table public.reports is
+  'Generated reports metadata and content. RLS: ENABLED.';
+
+-- ── 3.17 offline_sync_queue ───────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Queued actions from PWAs waiting for sync to backend
+create table if not exists public.offline_sync_queue (
+  id               uuid             primary key default gen_random_uuid(),
+  organisation_id  uuid             not null references public.organisations(id) on delete cascade,
+  user_id          uuid             not null references auth.users(id) on delete cascade,
+  action           sync_action_enum not null,
+  entity_type      text             not null,
+  entity_id        uuid,
+  payload          jsonb            not null default '{}'::jsonb,
+  status           sync_status_enum not null default 'pending',
+  error_message    text,
+  retry_count      smallint         not null default 0,
+  max_retries      smallint         not null default 3,
+  queued_at        timestamptz      not null default now(),
+  synced_at        timestamptz,
+  created_at       timestamptz      not null default now(),
+  updated_at       timestamptz      not null default now(),
+  demo_record      boolean          not null default false
+);
+comment on table public.offline_sync_queue is
+  'Offline action queue for PWA sync. Cleared after successful sync. RLS: ENABLED.';
+
+-- ── 3.18 backend_config_audit ─────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Tracks backend config test/update metadata without storing secrets
+-- ⚠ MUST NOT store service_role keys, JWT secrets, or full API keys.
+create table if not exists public.backend_config_audit (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        references public.organisations(id) on delete cascade,
+  provider         text        not null default 'supabase',  -- supabase | firebase | rest | aws | local
+  url_masked       text,        -- First 20 chars of URL only — never full key
+  key_fingerprint  text,        -- Last 4 chars of key only — never full key
+  status           text        not null default 'untested',  -- untested | ok | failed
+  last_tested_at   timestamptz,
+  tested_by        uuid        references auth.users(id) on delete set null,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+comment on table public.backend_config_audit is
+  'Backend config test log. NEVER stores secrets. Masked values only. RLS: ENABLED.';
+
+-- ── 3.19 activity_log ─────────────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: General audit/event log for operations
+create table if not exists public.activity_log (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        references public.organisations(id) on delete cascade,
+  user_id          uuid        references auth.users(id) on delete set null,
+  action           text        not null,  -- e.g. 'mission.created', 'check_in.submitted'
+  entity_type      text,
+  entity_id        uuid,
+  details          jsonb       not null default '{}'::jsonb,
+  ip_address       text,
+  user_agent       text,
+  created_at       timestamptz not null default now()
+);
+comment on table public.activity_log is
+  'Operational audit log. Append-only — no updates or deletes. RLS: ENABLED.';
+
+-- ── 3.20 notification_events ──────────────────────────────────
+-- RLS: ENABLED
+-- Purpose: Non-emergency notification events (realtime target)
+-- ⚠ NOT a substitute for emergency services. Advisory notifications only.
+create table if not exists public.notification_events (
+  id               uuid        primary key default gen_random_uuid(),
+  organisation_id  uuid        not null references public.organisations(id) on delete cascade,
+  target_user_id   uuid        references auth.users(id) on delete cascade,
+  type             text        not null default 'info',  -- info | alert | warning | system
+  title            text,
+  message          text,
+  entity_type      text,
+  entity_id        uuid,
+  read_at          timestamptz,
+  metadata         jsonb       not null default '{}'::jsonb,
+  created_at       timestamptz not null default now(),
+  expires_at       timestamptz,
+  demo_record      boolean     not null default false
+);
+comment on table public.notification_events is
+  'Non-emergency notification events. NOT a substitute for emergency services. Realtime enabled. RLS: ENABLED.';
+
+
+-- ============================================================
+-- 4. INDEXES
+-- ============================================================
+
+-- organisations
+create index if not exists idx_orgs_status         on public.organisations(status);
+create index if not exists idx_orgs_demo           on public.organisations(demo_record);
+
+-- profiles
+create index if not exists idx_profiles_created    on public.profiles(created_at);
+
+-- organisation_members
+create index if not exists idx_org_members_user    on public.organisation_members(user_id);
+create index if not exists idx_org_members_org     on public.organisation_members(organisation_id);
+create index if not exists idx_org_members_role    on public.organisation_members(role);
+create index if not exists idx_org_members_status  on public.organisation_members(status);
+
+-- service_users
+create index if not exists idx_su_org              on public.service_users(organisation_id);
+create index if not exists idx_su_status           on public.service_users(status);
+create index if not exists idx_su_risk             on public.service_users(risk_level);
+create index if not exists idx_su_auth_user        on public.service_users(auth_user_id);
+create index if not exists idx_su_demo             on public.service_users(demo_record);
+
+-- responders
+create index if not exists idx_resp_org            on public.responders(organisation_id);
+create index if not exists idx_resp_status         on public.responders(status);
+create index if not exists idx_resp_user           on public.responders(user_id);
+create index if not exists idx_resp_demo           on public.responders(demo_record);
+
+-- missions
+create index if not exists idx_mis_org             on public.missions(organisation_id);
+create index if not exists idx_mis_status          on public.missions(status);
+create index if not exists idx_mis_assigned        on public.missions(assigned_to);
+create index if not exists idx_mis_su              on public.missions(service_user_id);
+create index if not exists idx_mis_risk            on public.missions(risk_level);
+create index if not exists idx_mis_demo            on public.missions(demo_record);
+create index if not exists idx_mis_created         on public.missions(created_at desc);
+
+-- check_ins
+create index if not exists idx_ci_org              on public.check_ins(organisation_id);
+create index if not exists idx_ci_responder        on public.check_ins(responder_id);
+create index if not exists idx_ci_su               on public.check_ins(service_user_id);
+create index if not exists idx_ci_mission          on public.check_ins(mission_id);
+create index if not exists idx_ci_created          on public.check_ins(created_at desc);
+
+-- help_signals
+create index if not exists idx_hs_org              on public.help_signals(organisation_id);
+create index if not exists idx_hs_su               on public.help_signals(service_user_id);
+create index if not exists idx_hs_status           on public.help_signals(status);
+create index if not exists idx_hs_created          on public.help_signals(created_at desc);
+
+-- incidents
+create index if not exists idx_inc_org             on public.incidents(organisation_id);
+create index if not exists idx_inc_status          on public.incidents(status);
+create index if not exists idx_inc_severity        on public.incidents(severity);
+create index if not exists idx_inc_mission         on public.incidents(mission_id);
+create index if not exists idx_inc_created         on public.incidents(created_at desc);
+
+-- escalation_events
+create index if not exists idx_esc_org             on public.escalation_events(organisation_id);
+create index if not exists idx_esc_status          on public.escalation_events(status);
+create index if not exists idx_esc_created         on public.escalation_events(created_at desc);
+
+-- activity_log
+create index if not exists idx_al_org              on public.activity_log(organisation_id);
+create index if not exists idx_al_user             on public.activity_log(user_id);
+create index if not exists idx_al_entity           on public.activity_log(entity_type, entity_id);
+create index if not exists idx_al_created          on public.activity_log(created_at desc);
+
+-- notification_events
+create index if not exists idx_notif_user          on public.notification_events(target_user_id);
+create index if not exists idx_notif_org           on public.notification_events(organisation_id);
+create index if not exists idx_notif_read          on public.notification_events(read_at);
+create index if not exists idx_notif_created       on public.notification_events(created_at desc);
+
+-- offline_sync_queue
+create index if not exists idx_sq_user             on public.offline_sync_queue(user_id);
+create index if not exists idx_sq_org              on public.offline_sync_queue(organisation_id);
+create index if not exists idx_sq_status           on public.offline_sync_queue(status);
+create index if not exists idx_sq_created          on public.offline_sync_queue(created_at);
+
+
+-- ============================================================
+-- 5. HELPER FUNCTIONS
+-- ============================================================
+
+-- current_user_profile_id() — returns authenticated user's UUID
+create or replace function public.current_user_profile_id()
+returns uuid
+language sql stable
+security definer
+set search_path = public
+as $$
+  select auth.uid();
+$$;
+
+-- current_user_org_ids() — returns all org IDs the user belongs to (active only)
+create or replace function public.current_user_org_ids()
+returns setof uuid
+language sql stable
+security definer
+set search_path = public
+as $$
+  select organisation_id
+  from public.organisation_members
+  where user_id = auth.uid()
+    and status  = 'active';
+$$;
+
+-- current_user_role_for_org(org_id) — returns the user's role in a specific org
+create or replace function public.current_user_role_for_org(p_org_id uuid)
+returns text
+language sql stable
+security definer
+set search_path = public
+as $$
+  select role::text
+  from public.organisation_members
+  where user_id        = auth.uid()
+    and organisation_id = p_org_id
+    and status          = 'active'
+  limit 1;
+$$;
+
+-- is_org_member(org_id) — true if current user is active member
+create or replace function public.is_org_member(p_org_id uuid)
+returns boolean
+language sql stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.organisation_members
+    where user_id        = auth.uid()
+      and organisation_id = p_org_id
+      and status          = 'active'
+  );
+$$;
+
+-- has_org_role(org_id, roles[]) — true if user has one of the given roles in the org
+create or replace function public.has_org_role(p_org_id uuid, p_roles text[])
+returns boolean
+language sql stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.organisation_members
+    where user_id        = auth.uid()
+      and organisation_id = p_org_id
+      and status          = 'active'
+      and role::text      = any(p_roles)
+  );
+$$;
+
+-- is_assigned_responder(mission_id) — true if current user is the assigned responder
+create or replace function public.is_assigned_responder(p_mission_id uuid)
+returns boolean
+language sql stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.missions m
+    join public.responders r on r.id = m.assigned_to
+    where m.id    = p_mission_id
+      and r.user_id = auth.uid()
+  );
+$$;
+
+-- is_own_service_user(service_user_id) — true if current user owns this service user record
+create or replace function public.is_own_service_user(p_su_id uuid)
+returns boolean
+language sql stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.service_users
+    where id           = p_su_id
+      and auth_user_id = auth.uid()
+  );
+$$;
+
+-- touch_updated_at() — trigger function to auto-update updated_at
+create or replace function public.touch_updated_at()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+
+-- ============================================================
+-- 6. UPDATED_AT TRIGGERS
+-- ============================================================
+
+-- Macro to safely create trigger (won't error if already exists)
+do $$ declare t text; begin
+  foreach t in array array[
+    'organisations','profiles','organisation_members',
+    'service_users','responders','missions','mission_assignments',
+    'check_ins','help_signals','incidents','evidence_items',
+    'escalation_events','reports','offline_sync_queue',
+    'backend_config_audit','notification_events'
+  ] loop
+    execute format(
+      'create trigger trg_%s_touch_updated_at
+       before update on public.%s
+       for each row execute function public.touch_updated_at()',
+      replace(t,'-','_'), t
+    );
+  end loop;
+exception when duplicate_object then null;
+end $$;
+
+-- responder_status and service_user_status use updated_at directly
+create or replace function public.touch_status_updated_at()
+returns trigger language plpgsql security definer set search_path = public
+as $$
+begin new.updated_at = now(); return new; end;
+$$;
+
+do $$ begin
+  create trigger trg_responder_status_updated_at
+    before update on public.responder_status
+    for each row execute function public.touch_status_updated_at();
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create trigger trg_su_status_updated_at
+    before update on public.service_user_status
+    for each row execute function public.touch_status_updated_at();
+exception when duplicate_object then null; end $$;
+
+
+-- ============================================================
+-- 7. AUTO-CREATE PROFILE TRIGGER
+-- ============================================================
+-- When a new auth.users record is created, auto-create a profile row.
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, created_at, updated_at)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    now(),
+    now()
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+do $$ begin
+  create trigger trg_on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+exception when duplicate_object then null; end $$;
+
+
+================================================================
+PART 2 OF 4 — RLS POLICIES
+RUN AFTER schema.sql
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — RLS Policies
+-- supabase/rls-policies.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ EXECUTION ORDER: Run AFTER supabase/schema.sql
+--
+-- ⚠ RLS STATUS: ENABLED FOR ALL PRIVATE PRODUCTION TABLES
+--
+-- ⚠ HUMAN REVIEW REQUIRED:
+--   All escalation and safeguarding decisions must be reviewed
+--   by a human supervisor. These policies enforce data isolation
+--   but do NOT automate welfare decisions.
+--
+-- ⚠ EXECUTION STATUS:
+--   SQL setup pack PREPARED but NOT EXECUTED.
+--   Run in Supabase SQL Editor after schema.sql.
+-- ============================================================
+
+
+-- ============================================================
+-- 8. RLS ENABLE STATEMENTS
+-- ============================================================
+-- ⚠ ALL private production tables must have RLS enabled.
+
+alter table public.organisations        enable row level security;
+alter table public.profiles             enable row level security;
+alter table public.organisation_members enable row level security;
+alter table public.service_users        enable row level security;
+alter table public.responders           enable row level security;
+alter table public.missions             enable row level security;
+alter table public.mission_assignments  enable row level security;
+alter table public.responder_status     enable row level security;
+alter table public.service_user_status  enable row level security;
+alter table public.check_ins            enable row level security;
+alter table public.help_signals         enable row level security;
+alter table public.incidents            enable row level security;
+alter table public.evidence_items       enable row level security;
+alter table public.escalation_events    enable row level security;
+alter table public.ai_reviews           enable row level security;
+alter table public.reports              enable row level security;
+alter table public.offline_sync_queue   enable row level security;
+alter table public.backend_config_audit enable row level security;
+alter table public.activity_log         enable row level security;
+alter table public.notification_events  enable row level security;
+
+
+-- ============================================================
+-- 9. RLS POLICIES
+-- ============================================================
+
+-- ── Convenience: drop + recreate helper ──────────────────────
+-- Run each policy block idempotently.
+
+
+-- ── organisations ────────────────────────────────────────────
+
+-- Members can read their own organisation
+drop policy if exists "org_members_select" on public.organisations;
+create policy "org_members_select"
+  on public.organisations for select
+  to authenticated
+  using ( id in (select public.current_user_org_ids()) );
+
+-- Owners/admins can update their organisation
+drop policy if exists "org_admin_update" on public.organisations;
+create policy "org_admin_update"
+  on public.organisations for update
+  to authenticated
+  using ( public.has_org_role(id, array['owner','admin']) );
+
+-- Owners can delete their organisation
+drop policy if exists "org_owner_delete" on public.organisations;
+create policy "org_owner_delete"
+  on public.organisations for delete
+  to authenticated
+  using ( public.has_org_role(id, array['owner']) );
+
+-- No anon access
+-- (RLS enabled with no anon policy = anon blocked by default)
+
+
+-- ── profiles ──────────────────────────────────────────────────
+
+-- Users can read their own profile
+drop policy if exists "profiles_own_select" on public.profiles;
+create policy "profiles_own_select"
+  on public.profiles for select
+  to authenticated
+  using ( id = auth.uid() );
+
+-- Org admins/coordinators can read profiles of org members
+drop policy if exists "profiles_org_select" on public.profiles;
+create policy "profiles_org_select"
+  on public.profiles for select
+  to authenticated
+  using (
+    id in (
+      select user_id from public.organisation_members
+      where organisation_id in (select public.current_user_org_ids())
+        and status = 'active'
+    )
+  );
+
+-- Users can update their own profile
+drop policy if exists "profiles_own_update" on public.profiles;
+create policy "profiles_own_update"
+  on public.profiles for update
+  to authenticated
+  using ( id = auth.uid() );
+
+-- Profiles are auto-created by trigger — no manual insert policy needed for users
+-- Admins can create profiles for invited users
+drop policy if exists "profiles_admin_insert" on public.profiles;
+create policy "profiles_admin_insert"
+  on public.profiles for insert
+  to authenticated
+  with check ( id = auth.uid() );  -- only insert own profile
+
+
+-- ── organisation_members ──────────────────────────────────────
+
+-- Members can read membership for their orgs
+drop policy if exists "org_members_read" on public.organisation_members;
+create policy "org_members_read"
+  on public.organisation_members for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    or user_id = auth.uid()
+  );
+
+-- Owners/admins can insert members
+drop policy if exists "org_members_insert" on public.organisation_members;
+create policy "org_members_insert"
+  on public.organisation_members for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id, array['owner','admin'])
+  );
+
+-- Owners/admins can update members
+drop policy if exists "org_members_update" on public.organisation_members;
+create policy "org_members_update"
+  on public.organisation_members for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id, array['owner','admin'])
+  );
+
+-- Owners/admins can remove members
+drop policy if exists "org_members_delete" on public.organisation_members;
+create policy "org_members_delete"
+  on public.organisation_members for delete
+  to authenticated
+  using (
+    public.has_org_role(organisation_id, array['owner','admin'])
+    or user_id = auth.uid()  -- users can remove themselves
+  );
+
+
+-- ── service_users ─────────────────────────────────────────────
+
+-- Coordinators/supervisors/admins can read all service users in their org
+drop policy if exists "su_staff_select" on public.service_users;
+create policy "su_staff_select"
+  on public.service_users for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor'])
+    and demo_record = false
+  );
+
+-- Service users can read only their own record
+drop policy if exists "su_own_select" on public.service_users;
+create policy "su_own_select"
+  on public.service_users for select
+  to authenticated
+  using (
+    auth_user_id = auth.uid()
+    and demo_record = false
+  );
+
+-- Responders can read service users linked to their assigned missions
+drop policy if exists "su_responder_select" on public.service_users;
+create policy "su_responder_select"
+  on public.service_users for select
+  to authenticated
+  using (
+    id in (
+      select m.service_user_id from public.missions m
+      join public.responders r on r.id = m.assigned_to
+      where r.user_id = auth.uid()
+        and m.service_user_id is not null
+    )
+    and demo_record = false
+  );
+
+-- Coordinators/admins can insert/update service users
+drop policy if exists "su_staff_insert" on public.service_users;
+create policy "su_staff_insert"
+  on public.service_users for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+    and demo_record = false
+  );
+
+drop policy if exists "su_staff_update" on public.service_users;
+create policy "su_staff_update"
+  on public.service_users for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── responders ────────────────────────────────────────────────
+
+-- Staff can read responders in their org
+drop policy if exists "resp_staff_select" on public.responders;
+create policy "resp_staff_select"
+  on public.responders for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+-- Responders can read their own record
+drop policy if exists "resp_own_select" on public.responders;
+create policy "resp_own_select"
+  on public.responders for select
+  to authenticated
+  using (
+    user_id = auth.uid()
+    and demo_record = false
+  );
+
+-- Coordinators/admins can insert/update responders
+drop policy if exists "resp_staff_insert" on public.responders;
+create policy "resp_staff_insert"
+  on public.responders for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+drop policy if exists "resp_staff_update" on public.responders;
+create policy "resp_staff_update"
+  on public.responders for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+    or user_id = auth.uid()  -- responders can update own location/status
+  );
+
+
+-- ── missions ──────────────────────────────────────────────────
+
+-- Coordinators/supervisors/admins can read all org missions
+drop policy if exists "missions_staff_select" on public.missions;
+create policy "missions_staff_select"
+  on public.missions for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+-- Responders can read only their assigned missions
+drop policy if exists "missions_responder_select" on public.missions;
+create policy "missions_responder_select"
+  on public.missions for select
+  to authenticated
+  using (
+    public.is_assigned_responder(id)
+    and demo_record = false
+  );
+
+-- Coordinators/admins can create missions
+drop policy if exists "missions_staff_insert" on public.missions;
+create policy "missions_staff_insert"
+  on public.missions for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+    and demo_record = false
+  );
+
+-- Coordinators/admins can update missions; responders can update status for assigned missions
+drop policy if exists "missions_update" on public.missions;
+create policy "missions_update"
+  on public.missions for update
+  to authenticated
+  using (
+    (
+      public.has_org_role(organisation_id,
+        array['owner','admin','coordinator','supervisor'])
+    ) or (
+      public.is_assigned_responder(id)
+    )
+  );
+
+
+-- ── mission_assignments ───────────────────────────────────────
+
+drop policy if exists "ma_staff_select" on public.mission_assignments;
+create policy "ma_staff_select"
+  on public.mission_assignments for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+drop policy if exists "ma_staff_insert" on public.mission_assignments;
+create policy "ma_staff_insert"
+  on public.mission_assignments for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── responder_status ──────────────────────────────────────────
+
+drop policy if exists "rs_staff_select" on public.responder_status;
+create policy "rs_staff_select"
+  on public.responder_status for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+  );
+
+drop policy if exists "rs_responder_select" on public.responder_status;
+create policy "rs_responder_select"
+  on public.responder_status for select
+  to authenticated
+  using ( responder_id in (
+    select id from public.responders where user_id = auth.uid()
+  ));
+
+drop policy if exists "rs_upsert" on public.responder_status;
+create policy "rs_upsert"
+  on public.responder_status for all
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and (
+      public.has_org_role(organisation_id, array['owner','admin','coordinator','supervisor'])
+      or responder_id in (select id from public.responders where user_id = auth.uid())
+    )
+  );
+
+
+-- ── service_user_status ───────────────────────────────────────
+
+drop policy if exists "sus_staff_select" on public.service_user_status;
+create policy "sus_staff_select"
+  on public.service_user_status for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+  );
+
+drop policy if exists "sus_own_select" on public.service_user_status;
+create policy "sus_own_select"
+  on public.service_user_status for select
+  to authenticated
+  using ( public.is_own_service_user(service_user_id) );
+
+drop policy if exists "sus_upsert" on public.service_user_status;
+create policy "sus_upsert"
+  on public.service_user_status for all
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and (
+      public.has_org_role(organisation_id, array['owner','admin','coordinator','supervisor'])
+      or public.is_own_service_user(service_user_id)
+    )
+  );
+
+
+-- ── check_ins ─────────────────────────────────────────────────
+
+drop policy if exists "ci_staff_select" on public.check_ins;
+create policy "ci_staff_select"
+  on public.check_ins for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+-- Responders can read check-ins for their assigned missions
+drop policy if exists "ci_responder_select" on public.check_ins;
+create policy "ci_responder_select"
+  on public.check_ins for select
+  to authenticated
+  using (
+    responder_id in (select id from public.responders where user_id = auth.uid())
+    and demo_record = false
+  );
+
+-- Service users can read their own check-ins
+drop policy if exists "ci_su_select" on public.check_ins;
+create policy "ci_su_select"
+  on public.check_ins for select
+  to authenticated
+  using (
+    public.is_own_service_user(service_user_id)
+    and demo_record = false
+  );
+
+drop policy if exists "ci_insert" on public.check_ins;
+create policy "ci_insert"
+  on public.check_ins for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+
+-- ── help_signals ──────────────────────────────────────────────
+
+-- Staff can read all help signals for their org
+drop policy if exists "hs_staff_select" on public.help_signals;
+create policy "hs_staff_select"
+  on public.help_signals for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+-- Service users can read only their own help signals
+drop policy if exists "hs_own_select" on public.help_signals;
+create policy "hs_own_select"
+  on public.help_signals for select
+  to authenticated
+  using (
+    public.is_own_service_user(service_user_id)
+    and demo_record = false
+  );
+
+-- Service users can create their own help signals
+drop policy if exists "hs_su_insert" on public.help_signals;
+create policy "hs_su_insert"
+  on public.help_signals for insert
+  to authenticated
+  with check (
+    public.is_own_service_user(service_user_id)
+    and demo_record = false
+  );
+
+-- Staff can update (review/resolve) help signals
+drop policy if exists "hs_staff_update" on public.help_signals;
+create policy "hs_staff_update"
+  on public.help_signals for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── incidents ─────────────────────────────────────────────────
+
+drop policy if exists "inc_staff_select" on public.incidents;
+create policy "inc_staff_select"
+  on public.incidents for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+drop policy if exists "inc_responder_select" on public.incidents;
+create policy "inc_responder_select"
+  on public.incidents for select
+  to authenticated
+  using (
+    responder_id in (select id from public.responders where user_id = auth.uid())
+    and demo_record = false
+  );
+
+drop policy if exists "inc_insert" on public.incidents;
+create policy "inc_insert"
+  on public.incidents for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+drop policy if exists "inc_staff_update" on public.incidents;
+create policy "inc_staff_update"
+  on public.incidents for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── evidence_items ────────────────────────────────────────────
+
+drop policy if exists "ev_staff_select" on public.evidence_items;
+create policy "ev_staff_select"
+  on public.evidence_items for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+drop policy if exists "ev_insert" on public.evidence_items;
+create policy "ev_insert"
+  on public.evidence_items for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+
+-- ── escalation_events ────────────────────────────────────────
+-- ⚠ Supervisors/admins only — human review required
+
+drop policy if exists "esc_supervisor_select" on public.escalation_events;
+create policy "esc_supervisor_select"
+  on public.escalation_events for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor'])
+    and demo_record = false
+  );
+
+drop policy if exists "esc_insert" on public.escalation_events;
+create policy "esc_insert"
+  on public.escalation_events for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+drop policy if exists "esc_supervisor_update" on public.escalation_events;
+create policy "esc_supervisor_update"
+  on public.escalation_events for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── ai_reviews ────────────────────────────────────────────────
+
+drop policy if exists "ai_staff_select" on public.ai_reviews;
+create policy "ai_staff_select"
+  on public.ai_reviews for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+drop policy if exists "ai_insert" on public.ai_reviews;
+create policy "ai_insert"
+  on public.ai_reviews for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+
+-- ── reports ───────────────────────────────────────────────────
+
+drop policy if exists "rep_staff_select" on public.reports;
+create policy "rep_staff_select"
+  on public.reports for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor','viewer'])
+    and demo_record = false
+  );
+
+drop policy if exists "rep_staff_insert" on public.reports;
+create policy "rep_staff_insert"
+  on public.reports for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+    and demo_record = false
+  );
+
+drop policy if exists "rep_staff_update" on public.reports;
+create policy "rep_staff_update"
+  on public.reports for update
+  to authenticated
+  using (
+    public.has_org_role(organisation_id,
+      array['owner','admin','coordinator','supervisor'])
+  );
+
+
+-- ── offline_sync_queue ────────────────────────────────────────
+
+drop policy if exists "sq_own_select" on public.offline_sync_queue;
+create policy "sq_own_select"
+  on public.offline_sync_queue for select
+  to authenticated
+  using (
+    user_id = auth.uid()
+    and demo_record = false
+  );
+
+-- Admins can view all queue items for their org
+drop policy if exists "sq_admin_select" on public.offline_sync_queue;
+create policy "sq_admin_select"
+  on public.offline_sync_queue for select
+  to authenticated
+  using (
+    public.has_org_role(organisation_id, array['owner','admin'])
+    and demo_record = false
+  );
+
+drop policy if exists "sq_own_insert" on public.offline_sync_queue;
+create policy "sq_own_insert"
+  on public.offline_sync_queue for insert
+  to authenticated
+  with check (
+    user_id = auth.uid()
+    and demo_record = false
+  );
+
+drop policy if exists "sq_own_update" on public.offline_sync_queue;
+create policy "sq_own_update"
+  on public.offline_sync_queue for update
+  to authenticated
+  using ( user_id = auth.uid() );
+
+
+-- ── backend_config_audit ──────────────────────────────────────
+
+drop policy if exists "bca_admin_select" on public.backend_config_audit;
+create policy "bca_admin_select"
+  on public.backend_config_audit for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id, array['owner','admin'])
+  );
+
+drop policy if exists "bca_admin_insert" on public.backend_config_audit;
+create policy "bca_admin_insert"
+  on public.backend_config_audit for insert
+  to authenticated
+  with check (
+    public.has_org_role(organisation_id, array['owner','admin'])
+  );
+
+
+-- ── activity_log ──────────────────────────────────────────────
+-- Append-only. Admins/coordinators read.
+
+drop policy if exists "al_staff_select" on public.activity_log;
+create policy "al_staff_select"
+  on public.activity_log for select
+  to authenticated
+  using (
+    organisation_id in (select public.current_user_org_ids())
+    and public.has_org_role(organisation_id,
+          array['owner','admin','coordinator','supervisor'])
+  );
+
+drop policy if exists "al_insert" on public.activity_log;
+create policy "al_insert"
+  on public.activity_log for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+  );
+
+-- No update/delete on activity_log — append only.
+
+
+-- ── notification_events ───────────────────────────────────────
+
+drop policy if exists "notif_own_select" on public.notification_events;
+create policy "notif_own_select"
+  on public.notification_events for select
+  to authenticated
+  using (
+    target_user_id = auth.uid()
+    and demo_record = false
+  );
+
+drop policy if exists "notif_own_update" on public.notification_events;
+create policy "notif_own_update"
+  on public.notification_events for update
+  to authenticated
+  using ( target_user_id = auth.uid() );  -- for marking as read
+
+drop policy if exists "notif_staff_insert" on public.notification_events;
+create policy "notif_staff_insert"
+  on public.notification_events for insert
+  to authenticated
+  with check (
+    organisation_id in (select public.current_user_org_ids())
+    and demo_record = false
+  );
+
+
+================================================================
+PART 3 OF 4 — REALTIME
+RUN AFTER rls-policies.sql
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Supabase Realtime Setup
+-- supabase/realtime.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ EXECUTION ORDER: Run AFTER rls-policies.sql
+--
+-- ⚠ REALTIME + RLS:
+--   Supabase Realtime respects Row Level Security (RLS).
+--   Clients only receive INSERT/UPDATE/DELETE events for rows
+--   they are authorised to SELECT.
+--   The anon key + Supabase RLS is the authoritative control layer.
+--   NEVER use service_role key in frontend realtime subscriptions.
+--
+-- ⚠ EXECUTION STATUS:
+--   SQL setup pack PREPARED but NOT EXECUTED.
+--   Run in Supabase SQL Editor after rls-policies.sql.
+-- ============================================================
+
+
+-- ============================================================
+-- 10. REALTIME PUBLICATION
+-- ============================================================
+
+-- The default Supabase realtime publication is 'supabase_realtime'.
+-- Add each table that needs realtime change events.
+
+-- NOTE: If 'supabase_realtime' publication doesn't exist yet,
+-- Supabase manages it automatically. These ALTER statements add
+-- tables to the existing publication.
+
+-- ── Missions — Command Dashboard + Responder PWA ─────────────
+alter publication supabase_realtime add table public.missions;
+
+-- ── Mission Assignments — Command Dashboard ───────────────────
+alter publication supabase_realtime add table public.mission_assignments;
+
+-- ── Responder Status — Command Dashboard (live map + metrics) ─
+alter publication supabase_realtime add table public.responder_status;
+
+-- ── Service User Status — Command Dashboard ───────────────────
+alter publication supabase_realtime add table public.service_user_status;
+
+-- ── Check-ins — Dashboard + Responder PWA + SU PWA ───────────
+alter publication supabase_realtime add table public.check_ins;
+
+-- ── Help Signals — Dashboard + Service User PWA ───────────────
+alter publication supabase_realtime add table public.help_signals;
+
+-- ── Incidents — Command Dashboard ────────────────────────────
+alter publication supabase_realtime add table public.incidents;
+
+-- ── Evidence Items — Dashboard + Reporting ───────────────────
+alter publication supabase_realtime add table public.evidence_items;
+
+-- ── Escalation Events — Dashboard (supervisors/admins) ────────
+alter publication supabase_realtime add table public.escalation_events;
+
+-- ── AI Reviews — Dashboard + AI Overview ─────────────────────
+alter publication supabase_realtime add table public.ai_reviews;
+
+-- ── Reports — Dashboard + Reports page ───────────────────────
+alter publication supabase_realtime add table public.reports;
+
+-- ── Notification Events — All surfaces ───────────────────────
+alter publication supabase_realtime add table public.notification_events;
+
+
+-- ============================================================
+-- VERIFICATION: Check publication tables
+-- ============================================================
+
+-- Run this to confirm realtime is configured for your tables:
+select schemaname, tablename
+from pg_publication_tables
+where pubname = 'supabase_realtime'
+  and schemaname = 'public'
+order by tablename;
+
+
+================================================================
+PART 4 OF 4 — STORAGE
+RUN AFTER realtime.sql
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Supabase Storage Setup
+-- supabase/storage.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ EXECUTION ORDER: Run AFTER realtime.sql
+--
+-- ⚠ STORAGE SECURITY:
+--   All evidence buckets are PRIVATE by default.
+--   No public access to welfare evidence files.
+--   Signed URLs must be generated server-side for downloads.
+--   Never expose file URLs directly in the frontend without auth check.
+--
+-- ⚠ EXECUTION STATUS:
+--   SQL setup pack PREPARED but NOT EXECUTED.
+-- ============================================================
+
+
+-- ============================================================
+-- 11. STORAGE BUCKETS
+-- ============================================================
+
+-- Supabase Storage uses the storage schema.
+-- Buckets are created via SQL or the Supabase Dashboard.
+-- These inserts create the buckets if they don't exist.
+
+-- ── evidence-items — private ──────────────────────────────────
+-- Purpose: Evidence photos, audio, files, forms for incidents/missions
+-- Policy: private — no public access
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'evidence-items',
+  'evidence-items',
+  false,                    -- PRIVATE
+  52428800,                 -- 50MB max file size
+  array[
+    'image/jpeg','image/png','image/webp','image/heic',
+    'audio/mpeg','audio/mp4','audio/wav','audio/ogg','audio/webm',
+    'video/mp4','video/quicktime','video/webm',
+    'application/pdf',
+    'text/plain',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ]
+)
+on conflict (id) do nothing;
+
+-- ── report-exports — private ──────────────────────────────────
+-- Purpose: Exported report PDFs and data exports
+-- Policy: private — admin/coordinator access only
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'report-exports',
+  'report-exports',
+  false,                    -- PRIVATE
+  104857600,                -- 100MB max
+  array[
+    'application/pdf',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv',
+    'application/zip'
+  ]
+)
+on conflict (id) do nothing;
+
+-- ── organisation-assets — private (can be changed to public for branding) ──
+-- Purpose: Organisation logos, branding assets
+-- Policy: private by default; change to public if branding assets should be visible
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'organisation-assets',
+  'organisation-assets',
+  false,                    -- PRIVATE (change to true if logo should be public)
+  5242880,                  -- 5MB max
+  array[
+    'image/jpeg','image/png','image/webp','image/svg+xml',
+    'image/gif','image/ico','image/vnd.microsoft.icon'
+  ]
+)
+on conflict (id) do nothing;
+
+
+-- ============================================================
+-- 12. STORAGE POLICIES
+-- ============================================================
+-- Uses the storage.objects table + storage.foldername helper.
+
+
+-- ── evidence-items policies ───────────────────────────────────
+
+-- Staff (coordinators/supervisors/admins) can read org evidence
+drop policy if exists "ev_storage_staff_select" on storage.objects;
+create policy "ev_storage_staff_select"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'evidence-items'
+    and (storage.foldername(name))[1] in (
+      select id::text from public.organisations
+      where id in (select public.current_user_org_ids())
+    )
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin','coordinator','supervisor','viewer']
+    )
+  );
+
+-- Responders can upload evidence for their assigned missions
+-- File path structure: {org_id}/{mission_id}/{filename}
+drop policy if exists "ev_storage_responder_insert" on storage.objects;
+create policy "ev_storage_responder_insert"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'evidence-items'
+    and (storage.foldername(name))[1] in (
+      select id::text from public.organisations
+      where id in (select public.current_user_org_ids())
+    )
+    and (
+      public.has_org_role(
+        (storage.foldername(name))[1]::uuid,
+        array['owner','admin','coordinator','supervisor']
+      )
+      or (
+        -- Responders can upload for their org
+        public.is_org_member((storage.foldername(name))[1]::uuid)
+        and public.has_org_role(
+          (storage.foldername(name))[1]::uuid,
+          array['responder']
+        )
+      )
+    )
+  );
+
+-- Staff can delete evidence
+drop policy if exists "ev_storage_staff_delete" on storage.objects;
+create policy "ev_storage_staff_delete"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'evidence-items'
+    and (storage.foldername(name))[1] in (
+      select id::text from public.organisations
+      where id in (select public.current_user_org_ids())
+    )
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin','coordinator','supervisor']
+    )
+  );
+
+
+-- ── report-exports policies ───────────────────────────────────
+
+drop policy if exists "rep_storage_staff_select" on storage.objects;
+create policy "rep_storage_staff_select"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'report-exports'
+    and (storage.foldername(name))[1] in (
+      select id::text from public.organisations
+      where id in (select public.current_user_org_ids())
+    )
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin','coordinator','supervisor','viewer']
+    )
+  );
+
+drop policy if exists "rep_storage_staff_insert" on storage.objects;
+create policy "rep_storage_staff_insert"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'report-exports'
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin','coordinator','supervisor']
+    )
+  );
+
+drop policy if exists "rep_storage_admin_delete" on storage.objects;
+create policy "rep_storage_admin_delete"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'report-exports'
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin']
+    )
+  );
+
+
+-- ── organisation-assets policies ─────────────────────────────
+
+drop policy if exists "org_assets_staff_select" on storage.objects;
+create policy "org_assets_staff_select"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'organisation-assets'
+    and (storage.foldername(name))[1] in (
+      select id::text from public.organisations
+      where id in (select public.current_user_org_ids())
+    )
+  );
+
+drop policy if exists "org_assets_admin_insert" on storage.objects;
+create policy "org_assets_admin_insert"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'organisation-assets'
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin']
+    )
+  );
+
+drop policy if exists "org_assets_admin_delete" on storage.objects;
+create policy "org_assets_admin_delete"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'organisation-assets'
+    and public.has_org_role(
+      (storage.foldername(name))[1]::uuid,
+      array['owner','admin']
+    )
+  );
+
+
+================================================================
+VERIFICATION — Run anytime to check setup
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Verification Queries
+-- supabase/verification.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- PURPOSE:
+--   Run these queries in Supabase SQL Editor to verify your
+--   schema, RLS, realtime, and storage are configured correctly.
+--
+-- ⚠ EXECUTION STATUS:
+--   These are READ-ONLY verification queries.
+--   Safe to run at any time.
+-- ============================================================
+
+
+-- ============================================================
+-- V1. TABLES EXIST
+-- ============================================================
+-- Expected: all 20 tables listed
+
+select table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_type   = 'BASE TABLE'
+order by table_name;
+
+-- Expected tables:
+-- activity_log, ai_reviews, backend_config_audit, check_ins,
+-- escalation_events, evidence_items, help_signals, incidents,
+-- mission_assignments, missions, notification_events,
+-- offline_sync_queue, organisation_members, organisations,
+-- profiles, reports, responder_status, responders,
+-- service_user_status, service_users
+
+
+-- ============================================================
+-- V2. RLS IS ENABLED
+-- ============================================================
+-- Expected: rowsecurity = true for all private tables
+
+select tablename, rowsecurity
+from pg_tables
+where schemaname = 'public'
+  and tablename in (
+    'organisations','profiles','organisation_members',
+    'service_users','responders','missions','mission_assignments',
+    'responder_status','service_user_status','check_ins',
+    'help_signals','incidents','evidence_items',
+    'escalation_events','ai_reviews','reports',
+    'offline_sync_queue','backend_config_audit',
+    'activity_log','notification_events'
+  )
+order by tablename;
+
+
+-- ============================================================
+-- V3. POLICIES EXIST
+-- ============================================================
+-- Expected: multiple policies per table
+
+select tablename, policyname, cmd, roles
+from pg_policies
+where schemaname = 'public'
+order by tablename, policyname;
+
+
+-- ============================================================
+-- V4. REALTIME PUBLICATION
+-- ============================================================
+-- Expected: all 12 realtime tables listed
+
+select schemaname, tablename
+from pg_publication_tables
+where pubname    = 'supabase_realtime'
+  and schemaname = 'public'
+order by tablename;
+
+-- Expected tables in publication:
+-- ai_reviews, check_ins, escalation_events, evidence_items,
+-- help_signals, incidents, mission_assignments, missions,
+-- notification_events, reports, responder_status, service_user_status
+
+
+-- ============================================================
+-- V5. STORAGE BUCKETS EXIST
+-- ============================================================
+-- Expected: 3 buckets, all with public = false
+
+select id, name, public, file_size_limit
+from storage.buckets
+where id in ('evidence-items','report-exports','organisation-assets')
+order by id;
+
+
+-- ============================================================
+-- V6. HELPER FUNCTIONS EXIST
+-- ============================================================
+
+select routine_name, routine_type
+from information_schema.routines
+where routine_schema = 'public'
+  and routine_name in (
+    'current_user_profile_id',
+    'current_user_org_ids',
+    'current_user_role_for_org',
+    'is_org_member',
+    'has_org_role',
+    'is_assigned_responder',
+    'is_own_service_user',
+    'touch_updated_at',
+    'handle_new_user'
+  )
+order by routine_name;
+
+
+-- ============================================================
+-- V7. UPDATED_AT TRIGGERS EXIST
+-- ============================================================
+
+select trigger_name, event_object_table
+from information_schema.triggers
+where trigger_schema = 'public'
+  and trigger_name   like 'trg_%'
+order by event_object_table;
+
+
+-- ============================================================
+-- V8. AUTO-PROFILE TRIGGER EXISTS
+-- ============================================================
+-- Expected: trigger on auth.users
+
+select trigger_name, event_object_schema, event_object_table
+from information_schema.triggers
+where trigger_name = 'trg_on_auth_user_created';
+
+
+-- ============================================================
+-- V9. ENUMS EXIST
+-- ============================================================
+
+select t.typname as enum_name,
+       e.enumlabel as enum_value
+from pg_type t
+join pg_enum e on t.oid = e.enumtypid
+where t.typnamespace = (select oid from pg_namespace where nspname = 'public')
+order by t.typname, e.enumsortorder;
+
+
+-- ============================================================
+-- V10. INDEXES EXIST
+-- ============================================================
+
+select schemaname, tablename, indexname
+from pg_indexes
+where schemaname = 'public'
+  and indexname  like 'idx_%'
+order by tablename, indexname;
+
+
+-- ============================================================
+-- V11. RLS ISOLATION TEST (run as authenticated user)
+-- ============================================================
+-- These tests must be run as an authenticated user to verify RLS.
+-- Replace 'test-user-id' with a real user ID from auth.users.
+
+-- Test: Can a user see missions from another org?
+-- Expected: empty result (RLS should block cross-org access)
+/*
+select id, title, organisation_id
+from public.missions
+where organisation_id not in (select public.current_user_org_ids())
+  and demo_record = false;
+-- Expected: 0 rows
+*/
+
+-- Test: Can anon see missions?
+-- Expected: 0 rows (RLS blocks anon)
+/*
+-- Run as anon role (use Supabase API with anon key, no auth header)
+select count(*) from public.missions;
+-- Expected: 0
+*/
+
+-- Test: updated_at changes on update
+/*
+update public.missions
+set title = title
+where id = 'your-mission-id-here';
+
+select id, title, updated_at from public.missions
+where id = 'your-mission-id-here';
+-- Expected: updated_at should be now()
+*/
+
+
+-- ============================================================
+-- V12. DEMO DATA ISOLATION
+-- ============================================================
+-- Verify live queries return zero demo records
+
+select count(*) as live_missions    from public.missions     where demo_record = false;
+select count(*) as live_responders  from public.responders   where demo_record = false;
+select count(*) as live_su          from public.service_users where demo_record = false;
+select count(*) as demo_missions    from public.missions     where demo_record = true;
+
+-- Expected after initial setup (no data yet):
+--   live_missions:   0
+--   live_responders: 0
+--   live_su:         0
+--   demo_missions:   0 (unless demo seed was run — only in demo project)
+
+
+-- ============================================================
+-- V13. SUMMARY HEALTH CHECK
+-- ============================================================
+
+select
+  (select count(*) from public.organisations)        as organisations,
+  (select count(*) from public.profiles)             as profiles,
+  (select count(*) from public.organisation_members) as members,
+  (select count(*) from public.responders)           as responders,
+  (select count(*) from public.service_users)        as service_users,
+  (select count(*) from public.missions)             as missions,
+  (select count(*) from public.check_ins)            as check_ins,
+  (select count(*) from public.help_signals)         as help_signals,
+  (select count(*) from public.incidents)            as incidents;
+
+
+================================================================
+ROLLBACK — USE WITH EXTREME CAUTION — DELETES ALL DATA
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Rollback SQL
+-- supabase/rollback.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ WARNING — DESTRUCTIVE OPERATION
+--   Running this SQL will DROP all ResponseLink OS™ tables,
+--   functions, triggers, enums, and policies.
+--   ALL DATA WILL BE PERMANENTLY LOST.
+--
+-- ⚠ DO NOT RUN IN PRODUCTION unless you intend to fully
+--   remove the ResponseLink OS™ schema.
+--
+-- ⚠ BACKUP FIRST:
+--   Use Supabase Dashboard → Settings → Database → Backups
+--   to create a manual backup before rolling back.
+--
+-- ⚠ EXECUTION STATUS:
+--   NOT EXECUTED — manual run only.
+-- ============================================================
+
+
+-- ============================================================
+-- ROLLBACK STEP 1: Remove realtime publication tables
+-- ============================================================
+
+-- NOTE: If these tables don't exist or are not in the publication,
+-- these commands will error — that is safe to ignore.
+
+do $$ begin
+  alter publication supabase_realtime drop table if exists public.missions;
+  alter publication supabase_realtime drop table if exists public.mission_assignments;
+  alter publication supabase_realtime drop table if exists public.responder_status;
+  alter publication supabase_realtime drop table if exists public.service_user_status;
+  alter publication supabase_realtime drop table if exists public.check_ins;
+  alter publication supabase_realtime drop table if exists public.help_signals;
+  alter publication supabase_realtime drop table if exists public.incidents;
+  alter publication supabase_realtime drop table if exists public.evidence_items;
+  alter publication supabase_realtime drop table if exists public.escalation_events;
+  alter publication supabase_realtime drop table if exists public.ai_reviews;
+  alter publication supabase_realtime drop table if exists public.reports;
+  alter publication supabase_realtime drop table if exists public.notification_events;
+exception when others then null;
+end $$;
+
+
+-- ============================================================
+-- ROLLBACK STEP 2: Drop RLS policies (auto-dropped with tables)
+-- ============================================================
+-- RLS policies are dropped automatically when their tables are dropped.
+-- No manual policy drop needed.
+
+
+-- ============================================================
+-- ROLLBACK STEP 3: Drop triggers
+-- ============================================================
+
+drop trigger if exists trg_on_auth_user_created            on auth.users;
+drop trigger if exists trg_organisations_touch_updated_at  on public.organisations;
+drop trigger if exists trg_profiles_touch_updated_at       on public.profiles;
+drop trigger if exists trg_organisation_members_touch_updated_at on public.organisation_members;
+drop trigger if exists trg_service_users_touch_updated_at  on public.service_users;
+drop trigger if exists trg_responders_touch_updated_at     on public.responders;
+drop trigger if exists trg_missions_touch_updated_at       on public.missions;
+drop trigger if exists trg_mission_assignments_touch_updated_at on public.mission_assignments;
+drop trigger if exists trg_check_ins_touch_updated_at      on public.check_ins;
+drop trigger if exists trg_help_signals_touch_updated_at   on public.help_signals;
+drop trigger if exists trg_incidents_touch_updated_at      on public.incidents;
+drop trigger if exists trg_evidence_items_touch_updated_at on public.evidence_items;
+drop trigger if exists trg_escalation_events_touch_updated_at on public.escalation_events;
+drop trigger if exists trg_reports_touch_updated_at        on public.reports;
+drop trigger if exists trg_offline_sync_queue_touch_updated_at on public.offline_sync_queue;
+drop trigger if exists trg_backend_config_audit_touch_updated_at on public.backend_config_audit;
+drop trigger if exists trg_notification_events_touch_updated_at on public.notification_events;
+drop trigger if exists trg_responder_status_updated_at     on public.responder_status;
+drop trigger if exists trg_su_status_updated_at            on public.service_user_status;
+
+
+-- ============================================================
+-- ROLLBACK STEP 4: Drop tables (dependency-safe order)
+-- ============================================================
+-- Drop child tables before parent tables.
+
+drop table if exists public.offline_sync_queue   cascade;
+drop table if exists public.backend_config_audit cascade;
+drop table if exists public.activity_log         cascade;
+drop table if exists public.notification_events  cascade;
+drop table if exists public.ai_reviews           cascade;
+drop table if exists public.reports              cascade;
+drop table if exists public.escalation_events    cascade;
+drop table if exists public.evidence_items       cascade;
+drop table if exists public.incidents            cascade;
+drop table if exists public.help_signals         cascade;
+drop table if exists public.check_ins            cascade;
+drop table if exists public.service_user_status  cascade;
+drop table if exists public.responder_status     cascade;
+drop table if exists public.mission_assignments  cascade;
+drop table if exists public.missions             cascade;
+drop table if exists public.responders           cascade;
+drop table if exists public.service_users        cascade;
+drop table if exists public.organisation_members cascade;
+drop table if exists public.profiles             cascade;
+drop table if exists public.organisations        cascade;
+
+
+-- ============================================================
+-- ROLLBACK STEP 5: Drop functions
+-- ============================================================
+
+drop function if exists public.current_user_profile_id()    cascade;
+drop function if exists public.current_user_org_ids()       cascade;
+drop function if exists public.current_user_role_for_org(uuid) cascade;
+drop function if exists public.is_org_member(uuid)          cascade;
+drop function if exists public.has_org_role(uuid, text[])   cascade;
+drop function if exists public.is_assigned_responder(uuid)  cascade;
+drop function if exists public.is_own_service_user(uuid)    cascade;
+drop function if exists public.touch_updated_at()           cascade;
+drop function if exists public.touch_status_updated_at()    cascade;
+drop function if exists public.handle_new_user()            cascade;
+
+
+-- ============================================================
+-- ROLLBACK STEP 6: Drop enums
+-- ============================================================
+
+drop type if exists public.org_type_enum        cascade;
+drop type if exists public.member_role_enum     cascade;
+drop type if exists public.status_enum          cascade;
+drop type if exists public.mission_status_enum  cascade;
+drop type if exists public.mission_type_enum    cascade;
+drop type if exists public.risk_level_enum      cascade;
+drop type if exists public.responder_status_enum cascade;
+drop type if exists public.su_status_enum       cascade;
+drop type if exists public.severity_enum        cascade;
+drop type if exists public.sync_action_enum     cascade;
+drop type if exists public.sync_status_enum     cascade;
+
+
+-- ============================================================
+-- ROLLBACK STEP 7: Storage cleanup (manual)
+-- ============================================================
+-- Storage buckets must be emptied and deleted via Supabase Dashboard
+-- or using the Storage API. SQL cannot delete non-empty buckets.
+--
+-- Manual steps:
+--   1. Supabase Dashboard → Storage
+--   2. Open 'evidence-items' → select all → delete
+--   3. Open 'report-exports' → select all → delete
+--   4. Open 'organisation-assets' → select all → delete
+--   5. Delete each bucket from the Buckets list
+--
+-- Or via SQL (only works if buckets are empty):
+-- delete from storage.objects where bucket_id in ('evidence-items','report-exports','organisation-assets');
+-- delete from storage.buckets where id in ('evidence-items','report-exports','organisation-assets');
+
+
+-- ============================================================
+-- ROLLBACK STEP 8: Verification — confirm tables are gone
+-- ============================================================
+
+select count(*) as remaining_rl_tables
+from information_schema.tables
+where table_schema = 'public'
+  and table_name in (
+    'organisations','profiles','organisation_members',
+    'service_users','responders','missions',
+    'mission_assignments','responder_status',
+    'service_user_status','check_ins','help_signals',
+    'incidents','evidence_items','escalation_events',
+    'ai_reviews','reports','offline_sync_queue',
+    'backend_config_audit','activity_log','notification_events'
+  );
+-- Expected: 0
+
+-- ============================================================
+-- END OF ROLLBACK
+-- ============================================================
+
+
+================================================================
+DEMO SEED — COMMENTED OUT — DO NOT RUN IN PRODUCTION
+================================================================
+
+-- ============================================================
+-- ResponseLink OS™ — Demo Seed Data (DISABLED)
+-- supabase/seed-demo-disabled.sql
+--
+-- ResponseLink OS™
+-- AI-Assisted Community Welfare & Mobile Response Platform
+-- Powered by 4P3X Intelligent AI™ Created by Kyzel Kreates™
+--
+-- Run 11 — Complete Supabase Backend SQL + RLS + Realtime
+--
+-- ⚠ WARNING — DO NOT RUN IN PRODUCTION
+--   This file contains commented-out sample demo seed data only.
+--   Do NOT run demo seed data in a production Supabase project
+--   unless using a dedicated demo/staging project.
+--
+-- ⚠ DEMO DATA RULE:
+--   All demo records carry demo_record = true.
+--   Live queries MUST filter: WHERE demo_record = false
+--   Demo data must never mix with live operational welfare data.
+--
+-- HOW TO USE:
+--   1. Create a SEPARATE Supabase project for demos/showcases.
+--   2. Uncomment the SQL blocks below.
+--   3. Run in the DEMO project only.
+--   4. Never run in your live production project.
+-- ============================================================
+
+
+-- ============================================================
+-- DEMO SEED — COMMENTED OUT (do not uncomment in production)
+-- ============================================================
+
+/*
+
+-- Demo organisation
+INSERT INTO public.organisations (id, name, type, description, contact_email, status, demo_record)
+VALUES (
+  'a1000000-0000-0000-0000-000000000001',
+  'Westbridge Community Welfare Trust',
+  'charity',
+  'Demo organisation — sample data only. Not a real organisation.',
+  'demo@responselink.os',
+  'active',
+  true  -- ← DEMO RECORD — never included in live queries
+);
+
+-- Demo service users
+INSERT INTO public.service_users
+  (id, organisation_id, full_name, risk_level, status, demo_record)
+VALUES
+  ('b1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+   'Alex Thompson', 'medium', 'stable', true),
+  ('b1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001',
+   'Sarah Mitchell', 'high', 'needs_follow_up', true),
+  ('b1000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000001',
+   'James Okafor', 'low', 'stable', true);
+
+-- Demo responders
+INSERT INTO public.responders
+  (id, organisation_id, full_name, status, demo_record)
+VALUES
+  ('c1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+   'Jordan Clarke', 'available', true),
+  ('c1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001',
+   'Maria Santos', 'assigned', true);
+
+-- Demo missions
+INSERT INTO public.missions
+  (id, organisation_id, title, type, status, risk_level, priority,
+   service_user_id, assigned_to, demo_record)
+VALUES
+  ('d1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+   'Weekly welfare check — Alex Thompson', 'welfare_check', 'assigned', 'medium', 'standard',
+   'b1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', true),
+  ('d1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001',
+   'Urgent follow-up — Sarah Mitchell', 'follow_up_visit', 'travelling', 'high', 'urgent',
+   'b1000000-0000-0000-0000-000000000002', 'c1000000-0000-0000-0000-000000000002', true),
+  ('d1000000-0000-0000-0000-000000000003', 'a1000000-0000-0000-0000-000000000001',
+   'Supply delivery — James Okafor', 'supply_delivery', 'assigned', 'low', 'low',
+   'b1000000-0000-0000-0000-000000000003', null, true);
+
+-- Demo help signal
+INSERT INTO public.help_signals
+  (id, organisation_id, service_user_id, type, urgency, status, notes, demo_record)
+VALUES (
+  'e1000000-0000-0000-0000-000000000001',
+  'a1000000-0000-0000-0000-000000000001',
+  'b1000000-0000-0000-0000-000000000002',
+  'help_request', 'medium', 'pending',
+  'Demo: Service user requested support for daily tasks.',
+  true
+);
+
+-- Demo check-in
+INSERT INTO public.check_ins
+  (id, organisation_id, type, responder_id, mission_id, status, notes, demo_record)
+VALUES (
+  'f1000000-0000-0000-0000-000000000001',
+  'a1000000-0000-0000-0000-000000000001',
+  'standard',
+  'c1000000-0000-0000-0000-000000000001',
+  'd1000000-0000-0000-0000-000000000001',
+  'ok',
+  'Demo: Arrived safely at service user address.',
+  true
+);
+
+*/
+
+-- ============================================================
+-- LIVE QUERY FILTER REMINDER
+-- ============================================================
+-- All live queries MUST include: WHERE demo_record = false
+-- Example:
+--   SELECT * FROM public.missions WHERE demo_record = false;
+--
+-- RLS policies in rls-policies.sql already enforce this for
+-- authenticated users. Add it to any raw SQL queries too.
+-- ============================================================
+
+================================================================
+END OF RESPONSELINK OS™ FULL SQL PACK
+ResponseLink OS™ · 4P3X Intelligent AI™ · Kyzel Kreates™
+Advisory and coordination-support software only.
+Does not replace emergency services or professional safeguarding.
+================================================================
